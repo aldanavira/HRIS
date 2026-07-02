@@ -1004,6 +1004,57 @@ function simulateImport(){
   alert("Import berhasil! "+count+" karyawan baru ditambahkan dari file.");
 }
 
+
+// ============ EDIT ROLE FORM (Hak Akses) ============
+function showEditRoleForm(roleName){
+  var roleKey=roleName.toLowerCase().replace(/\s/g,"");
+  var roleMap={"superadmin":"superadmin","timhc":"hc","picunitkerja":"pic","employee(ess)":"employee"};
+  var key=roleMap[roleKey]||"employee";
+  var p=RBAC[key];
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama Role</label><input class="input" id="roleName" value="'+roleName+'" readonly></div>';
+  h+='<div style="margin:16px 0"><label style="font-size:13px;font-weight:600;margin-bottom:10px;display:block">Hak Akses (centang untuk memberikan akses):</label>';
+  var perms=[['create','Create (Buat Data)'],['read','Read (Lihat Data)'],['update','Update (Edit Data)'],['delete','Delete (Hapus Data)'],['import','Import Data'],['export','Export Data'],['upload','Upload Dokumen'],['approve','Approve Workflow']];
+  perms.forEach(function(pm){
+    var checked=p[pm[0]]?'checked':'';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;border:1px solid var(--gray-100);border-radius:6px"><input type="checkbox" id="perm_'+pm[0]+'" '+checked+' style="width:18px;height:18px"><label for="perm_'+pm[0]+'" style="font-size:13px;cursor:pointer">'+pm[1]+'</label></div>';
+  });
+  h+='</div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditRole(\''+key+'\')">Simpan Perubahan</button>';
+  openModal("Edit Hak Akses - "+roleName,h);
+}
+
+function submitEditRole(roleKey){
+  var perms=["create","read","update","delete","import","export","upload","approve"];
+  perms.forEach(function(p){
+    var el=document.getElementById("perm_"+p);
+    if(el)RBAC[roleKey][p]=el.checked;
+  });
+  closeModal();
+  alert("Hak akses berhasil diperbarui untuk role: "+roleKey);
+  renderSection("hakakses");
+}
+
+// ============ EDIT PIC FORM (Hak Akses) ============
+function showEditPICForm(picName){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama PIC</label><input class="input" id="picName" value="'+picName+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Unit Kerja</label><select id="picUnit" class="input">';
+  UNITS.forEach(function(u){h+="<option value=\""+u+"\">"+u+"</option>";});
+  h+='</select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Role</label><select id="picRole" class="input"><option value="pic">PIC Unit Kerja</option><option value="hc">Tim HC</option><option value="superadmin">Super Admin</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Status</label><select id="picStatus" class="input"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditPIC(\''+picName+'\')">Simpan</button>';
+  openModal("Edit PIC - "+picName,h);
+}
+
+function submitEditPIC(picName){
+  var newName=document.getElementById("picName").value;
+  var unit=document.getElementById("picUnit").value;
+  var role=document.getElementById("picRole").value;
+  var status=document.getElementById("picStatus").value;
+  closeModal();
+  alert("Data PIC diperbarui:\nNama: "+newName+"\nUnit: "+unit+"\nRole: "+role+"\nStatus: "+status);
+  renderSection("hakakses");
+}
 function simulateExport(){
   alert("Simulasi Export: Data "+EMPLOYEES.length+" karyawan akan diekspor ke format Excel/CSV.\n\nFile: DataKaryawan_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
@@ -1103,27 +1154,49 @@ function stackedBarSVG(){
 // E. Dashboard Turnover
 RENDERERS.turnover=function(c){
   var months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-  var tData=[2.1,2.8,3.1,2.5,3.0,3.2,2.9,3.5,2.7,2.3,2.6,3.2];
-  var h='<div class="page-title">Dashboard Turnover</div><div class="page-desc">Analisis pergerakan karyawan keluar-masuk organisasi</div>';
+  // Calculate from real employee data
+  var totalEmp=EMPLOYEES.length;
+  var resigned=EMPLOYEES.filter(function(e){return e.status==="nonaktif";});
+  var resignCount=resigned.length;
+  var turnoverRate=totalEmp>0?((resignCount/totalEmp)*100).toFixed(1):"0.0";
+  // Per-unit breakdown from real data
+  var unitStats=UNITS.map(function(u){
+    var tot=EMPLOYEES.filter(function(e){return e.unit===u;}).length;
+    var res=EMPLOYEES.filter(function(e){return e.unit===u&&e.status==="nonaktif";}).length;
+    var rate=tot>0?((res/tot)*100).toFixed(1):"0.0";
+    return {unit:u,total:tot,resigned:res,rate:parseFloat(rate)};
+  });
+  // Simulate monthly trend based on actual resign count
+  var tData=months.map(function(m,i){
+    var base=parseFloat(turnoverRate);
+    return parseFloat((base+(Math.sin(i)*0.8)-0.3).toFixed(1));
+  });
+  var h='<div class="page-title">Dashboard Turnover</div><div class="page-desc">Analisis pergerakan karyawan keluar-masuk organisasi (berdasarkan data karyawan real)'+roleBadge()+'</div>';
   h+='<div class="kpi-grid">';
-  h+=kpiCard("trending","3.2%","Turnover Rate","Bulan ini","var(--red)","var(--red-bg)","down");
-  h+=kpiCard("users","5","Karyawan Masuk","Bulan ini","var(--green)","var(--green-bg)","up");
-  h+=kpiCard("alert","3","Resign","Bulan ini","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("trending",turnoverRate+"%","Turnover Rate",""+resignCount+" dari "+totalEmp+" karyawan","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("users",""+(totalEmp-resignCount),"Karyawan Aktif","Dari total "+totalEmp,"var(--green)","var(--green-bg)","up");
+  h+=kpiCard("alert",""+resignCount,"Total Resign (Nonaktif)","Berdasarkan status kepegawaian","var(--red)","var(--red-bg)","down");
   h+=kpiCard("clock","1","Pensiun","Bulan ini","var(--yellow)","var(--yellow-bg)");
   h+='</div>';
   h+='<div class="grid-2">';
   h+='<div class="card"><div class="card-header"><div class="card-title">Tren Turnover 12 Bulan</div></div>'+lineChartSVG(tData,months)+'</div>';
-  h+='<div class="card"><div class="card-header"><div class="card-title">Alasan Resign</div></div>'+donutSVG([{label:"Gaji",val:8,color:"#dc2626"},{label:"Jenjang Karir",val:6,color:"#ca8a04"},{label:"Relokasi",val:4,color:"#2563eb"},{label:"Lainnya",val:3,color:"#9aa1b1"}])+'</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Alasan Resign</div></div>'+donutSVG([{label:"Gaji",val:Math.ceil(resignCount*0.3),color:"#dc2626"},{label:"Jenjang Karir",val:Math.ceil(resignCount*0.25),color:"#ca8a04"},{label:"Relokasi",val:Math.ceil(resignCount*0.2),color:"#2563eb"},{label:"Lainnya",val:Math.max(1,Math.floor(resignCount*0.15)),color:"#9aa1b1"}])+'</div>';
   h+='</div>';
   h+='<div class="card"><div class="card-header"><div class="card-title">Breakdown Turnover per Unit Kerja</div></div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Unit Kerja</th><th>Total Karyawan</th><th>Resign YTD</th><th>Turnover Rate</th></tr></thead><tbody>';
-  UNITS.forEach(function(u){
-    var tot=EMPLOYEES.filter(function(e){return e.unit===u;}).length;
-    var res=Math.floor(Math.random()*3)+1;
-    var rate=(res/tot*100).toFixed(1);
-    h+='<tr><td>'+u+'</td><td>'+tot+'</td><td>'+res+'</td><td><span class="badge '+(rate>10?"badge-red":"badge-green")+'">'+rate+'%</span></td></tr>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Unit Kerja</th><th>Total Karyawan</th><th>Resign (Nonaktif)</th><th>Turnover Rate</th></tr></thead><tbody>';
+  unitStats.forEach(function(s){
+    h+='<tr><td>'+s.unit+'</td><td>'+s.total+'</td><td>'+s.resigned+'</td><td><span class="badge '+(s.rate>10?"badge-red":"badge-green")+'">'+s.rate+'%</span></td></tr>';
   });
   h+='</tbody></table></div></div>';
+  // List of resigned employees
+  if(resigned.length>0){
+    h+='<div class="card"><div class="card-header"><div class="card-title">Daftar Karyawan Nonaktif (Resign)</div></div>';
+    h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>NRP</th><th>Unit Kerja</th><th>Jabatan</th><th>Jenis</th></tr></thead><tbody>';
+    resigned.forEach(function(e){
+      h+='<tr><td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td><td>'+e.nrp+'</td><td>'+e.unit+'</td><td>'+e.jabatan+'</td><td>'+e.jenis+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
   c.innerHTML=h;
 };
 
@@ -1155,12 +1228,12 @@ RENDERERS.cuti=function(c){
   h+=kpiCard("users","2","Cuti Melahirkan Aktif","Karyawan","var(--green)","var(--green-bg)");
   h+=kpiCard("alert","4","Pengajuan Cuti Pending","Menunggu approval","var(--red)","var(--red-bg)");
   h+='</div>';
-  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Kehadiran Karyawan</div>'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export rekap kehadiran ke Excel...\')">Export</button>':'')+'</div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Hadir</th><th>Terlambat</th><th>Tidak Hadir</th><th>Izin</th><th>Sisa Cuti</th></tr></thead><tbody>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Kehadiran Karyawan</div><div style="display:flex;gap:6px">'+(can("import")?'<button class="btn btn-secondary btn-sm" onclick="showImportAbsensiForm()">Import</button>':'')+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="exportAbsensi()">Export</button>':'')+'</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Hadir</th><th>Terlambat</th><th>Tidak Hadir</th><th>Izin</th><th>Sisa Cuti</th>'+(can("update")?'<th>Aksi</th>':'')+'</tr></thead><tbody id="cutiRekapTbody">';
   ATTENDANCE.forEach(function(a){
     var tidakHadir=a.izin+a.sakit+a.alpa;
     var sisa=12-Math.floor(Math.random()*5);
-    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+' hari</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+(tidakHadir>0?'<span class="badge badge-red">'+tidakHadir+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+a.izin+'</td><td>'+sisa+' hari</td></tr>';
+    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+' hari</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+(tidakHadir>0?'<span class="badge badge-red">'+tidakHadir+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+a.izin+'</td><td>'+sisa+' hari</td>'+(can("update")?'<td><button class="btn btn-secondary btn-sm" onclick="showEditAbsensiForm('+a.emp.id+')">Edit</button></td>':'')+'</tr>';
   });
   h+='</tbody></table></div></div>';
   c.innerHTML=h;
@@ -1181,8 +1254,8 @@ RENDERERS.absensi=function(c){
   });
   h+='</div></div>';
   // Monitoring table
-  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kehadiran <span id="absPeriodLabel" style="font-weight:400;color:#9aa1b1;font-size:12px">(Harian)</span></div></div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Masuk</th><th>Terlambat</th><th>Pulang Cepat</th><th>Izin</th><th>Dinas Luar</th><th>Cuti</th><th>Sakit</th><th>Alpa</th><th>WFH</th></tr></thead><tbody id="absTbody"></tbody></table></div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kehadiran <span id="absPeriodLabel" style="font-weight:400;color:#9aa1b1;font-size:12px">(Harian)</span></div><div style="display:flex;gap:6px">'+(can("import")?'<button class="btn btn-secondary btn-sm" onclick="showImportAbsensiForm()">Import</button>':'')+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="exportAbsensi()">Export</button>':'')+'</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Masuk</th><th>Terlambat</th><th>Pulang Cepat</th><th>Izin</th><th>Dinas Luar</th><th>Cuti</th><th>Sakit</th><th>Alpa</th><th>WFH</th>'+(can("update")?'<th>Aksi</th>':'')+'</tr></thead><tbody id="absTbody"></tbody></table></div>';
   h+='</div>';
   // Perhitungan otomatis
   h+='<div class="card"><div class="card-header"><div class="card-title">Perhitungan Otomatis Tunjangan Kehadiran</div></div>';
@@ -1197,6 +1270,54 @@ RENDERERS.absensi=function(c){
   renderCalcTable();
 };
 
+function showEditAbsensiForm(empId){
+  var a=ATTENDANCE.filter(function(x){return x.emp.id===empId;})[0];
+  if(!a){alert("Data absensi tidak ditemukan");return;}
+  var h='<div class="form-row"><div class="form-group"><label>Karyawan</label><input class="input" value="'+a.emp.nama+'" readonly></div><div class="form-group"><label>NRP</label><input class="input" value="'+a.emp.nrp+'" readonly></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Hadir (hari)</label><input class="input" type="number" id="absHadir" value="'+a.hadir+'"></div><div class="form-group"><label>Terlambat (hari)</label><input class="input" type="number" id="absTerlambat" value="'+a.terlambat+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Izin</label><input class="input" type="number" id="absIzin" value="'+a.izin+'"></div><div class="form-group"><label>Sakit</label><input class="input" type="number" id="absSakit" value="'+a.sakit+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Alpa</label><input class="input" type="number" id="absAlpa" value="'+a.alpa+'"></div><div class="form-group"><label>WFH (hari)</label><input class="input" type="number" id="absWfh" value="'+a.wfh+'"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditAbsensi('+empId+')">Simpan Perubahan</button>';
+  openModal("Edit Data Absensi - "+a.emp.nama,h);
+}
+
+function submitEditAbsensi(empId){
+  var a=ATTENDANCE.filter(function(x){return x.emp.id===empId;})[0];
+  if(!a)return;
+  a.hadir=parseInt(document.getElementById("absHadir").value)||0;
+  a.terlambat=parseInt(document.getElementById("absTerlambat").value)||0;
+  a.izin=parseInt(document.getElementById("absIzin").value)||0;
+  a.sakit=parseInt(document.getElementById("absSakit").value)||0;
+  a.alpa=parseInt(document.getElementById("absAlpa").value)||0;
+  a.wfh=parseInt(document.getElementById("absWfh").value)||0;
+  closeModal();
+  var period=document.querySelector(".tab.active")?document.querySelector(".tab.active").textContent.toLowerCase():"harian";
+  renderAbsensiTable(period.includes("minggu")?"mingguan":period.includes("bulan")?"bulanan":"harian");
+  renderCalcTable();
+  alert("Data absensi berhasil diperbarui untuk: "+a.emp.nama);
+}
+
+function showImportAbsensiForm(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Periode</label><select id="importPeriode" class="input"><option value="harian">Harian</option><option value="mingguan">Mingguan</option><option value="bulanan">Bulanan</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Pilih File (CSV/Excel)</label><div style="border:2px dashed var(--gray-300);border-radius:8px;padding:24px;text-align:center;cursor:pointer" onclick="document.getElementById(\'importFile\').click()"><div id="importFileName">'+svgIcon("download")+'<br>Klik untuk pilih file</div><input type="file" id="importFile" style="display:none" onchange="document.getElementById(\'importFileName\').innerHTML=\'File: \'+this.files[0].name"></div></div>';
+  h+='<div style="font-size:12px;color:#6b7280;margin-bottom:12px">Format kolom: Nama, NRP, Hadir, Terlambat, Izin, Sakit, Alpa, WFH</div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitImportAbsensi()">Import Data</button>';
+  openModal("Import Data Absensi",h);
+}
+
+function submitImportAbsensi(){
+  var file=document.getElementById("importFile");
+  if(!file||!file.files[0]){alert("Pilih file terlebih dahulu");return;}
+  var fileName=file.files[0].name;
+  closeModal();
+  alert("Import berhasil!\nFile: "+fileName+"\nData absensi telah diperbarui.");
+  renderAbsensiTable("harian");
+  renderCalcTable();
+}
+
+function exportAbsensi(){
+  alert("Export data absensi ke Excel...\nTotal "+ATTENDANCE.length+" karyawan\nFile: Absensi_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
 function switchAbsensiTab(el,period){
   el.parentNode.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
   el.classList.add("active");
@@ -1209,7 +1330,7 @@ function renderAbsensiTable(period){
   var h='';
   ATTENDANCE.forEach(function(a){
     var masuk=period==="harian"?(Math.random()>.1?"08:0"+Math.floor(Math.random()*9):"Terlambat"):(a.hadir*mult/22).toFixed(0)+" hari";
-    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+masuk+'</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.izin+'</td><td>'+(Math.random()>.7?'1':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.sakit+'</td><td>'+(a.alpa>0?'<span class="badge badge-red">'+a.alpa+'</span>':'-')+'</td><td>'+(a.wfh>0?a.wfh:'-')+'</td></tr>';
+    var aksi=can("update")?'<td><button class="btn btn-secondary btn-sm" onclick="showEditAbsensiForm('+a.emp.id+')">Edit</button></td>':'';h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+masuk+'</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.izin+'</td><td>'+(Math.random()>.7?'1':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.sakit+'</td><td>'+(a.alpa>0?'<span class="badge badge-red">'+a.alpa+'</span>':'-')+'</td><td>'+(a.wfh>0?a.wfh:'-')+'</td>'+aksi+'</tr>';
   });
   var tb=document.getElementById("absTbody");
   if(tb)tb.innerHTML=h;
