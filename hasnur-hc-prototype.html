@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Human Capital Terintegrasi - Yayasan Hasnur Centre</title>
+<style>
+:root{
+  --navy-900:#0a1f44; --navy-800:#102a5c; --navy-700:#1a3a7a; --navy-600:#23488f;
+  --navy-500:#2d5aa8; --navy-400:#4a78c4; --navy-300:#7ba0d8;
+  --gray-50:#f7f8fa; --gray-100:#eef0f4; --gray-200:#dde1e8; --gray-300:#c4cad6;
+  --gray-400:#9aa1b1; --gray-500:#6b7280; --gray-600:#4b5563; --gray-700:#374151;
+  --green:#16a34a; --green-bg:#dcfce7; --yellow:#ca8a04; --yellow-bg:#fef9c3;
+  --red:#dc2626; --red-bg:#fee2e2; --blue:#2563eb; --blue-bg:#dbeafe;
+  --white:#ffffff; --shadow:0 1px 3px rgba(10,31,68,.08),0 1px 2px rgba(10,31,68,.06);
+  --shadow-md:0 4px 6px -1px rgba(10,31,68,.1),0 2px 4px -2px rgba(10,31,68,.06);
+  --radius:10px; --radius-sm:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--gray-50);color:var(--gray-700);font-size:14px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:264px;background:var(--navy-900);color:#cdd6e6;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;transition:transform .25s ease;display:flex;flex-direction:column}
+.sidebar.collapsed{transform:translateX(-264px)}
+.sidebar-header{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sidebar-logo{width:36px;height:36px;background:var(--navy-500);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo svg{width:22px;height:22px}
+.sidebar-title{font-size:13px;font-weight:600;color:#fff;line-height:1.3}
+.sidebar-sub{font-size:10px;color:#7ba0d8;margin-top:2px}
+.nav-group{padding:10px 0}
+.nav-group-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#5a7299;padding:8px 20px 4px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 20px;font-size:13px;color:#b8c4d8;cursor:pointer;transition:background .15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav-item.active{background:rgba(45,90,168,.25);color:#fff;border-left-color:var(--navy-400)}
+.nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85}
+.nav-item.hidden{display:none}
+
+.main{flex:1;margin-left:264px;transition:margin .25s ease;display:flex;flex-direction:column;min-height:100vh}
+.main.full{margin-left:0}
+.topbar{background:#fff;height:60px;display:flex;align-items:center;gap:14px;padding:0 24px;box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+.hamburger{display:none;width:36px;height:36px;border-radius:var(--radius-sm);align-items:center;justify-content:center}
+.hamburger:hover{background:var(--gray-100)}
+.hamburger svg{width:22px;height:22px}
+.breadcrumb{font-size:13px;color:var(--gray-500);flex:1}
+.breadcrumb b{color:var(--navy-800)}
+.breadcrumb .sep{margin:0 6px;color:var(--gray-300)}
+.role-switcher{position:relative}
+.role-btn{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--gray-100);border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--navy-800)}
+.role-btn:hover{background:var(--gray-200)}
+.role-btn svg{width:16px;height:16px}
+.role-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow-md);min-width:200px;display:none;z-index:60}
+.role-dropdown.open{display:block}
+.role-option{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;cursor:pointer;border-radius:var(--radius-sm)}
+.role-option:hover{background:var(--gray-50)}
+.role-option.selected{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.role-option svg{width:16px;height:16px}
+.topbar-user{display:flex;align-items:center;gap:8px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--navy-500);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.user-info{font-size:12px;line-height:1.3}
+.user-info b{display:block;color:var(--navy-800)}
+.user-info span{color:var(--gray-400)}
+
+.content{padding:24px;flex:1}
+.section{display:none;animation:fadeIn .2s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.page-title{font-size:20px;font-weight:700;color:var(--navy-900);margin-bottom:4px}
+.page-desc{font-size:13px;color:var(--gray-500);margin-bottom:20px}
+
+/* Cards */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;color:var(--navy-800)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.kpi-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;align-items:center;gap:14px}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-icon svg{width:24px;height:24px}
+.kpi-info{flex:1}
+.kpi-label{font-size:12px;color:var(--gray-500);margin-bottom:2px}
+.kpi-value{font-size:22px;font-weight:700;color:var(--navy-900)}
+.kpi-sub{font-size:11px;color:var(--gray-400);margin-top:2px}
+.kpi-trend{font-size:11px;font-weight:600}
+.kpi-trend.up{color:var(--green)} .kpi-trend.down{color:var(--red)}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-gray{background:var(--gray-100);color:var(--gray-600)}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;background:var(--gray-50);color:var(--gray-600);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--gray-200);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+tr.clickable{cursor:pointer}
+tr.clickable:hover{background:var(--gray-50)}
+.avatar-sm{width:30px;height:30px;border-radius:50%;background:var(--navy-400);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-right:8px;vertical-align:middle}
+
+/* Forms */
+.form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+.form-group{flex:1;min-width:160px}
+.form-group label{display:block;font-size:12px;color:var(--gray-600);margin-bottom:5px;font-weight:500}
+.input,select{width:100%;padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);background:#fff;color:var(--gray-700);transition:border .15s}
+.input:focus,select:focus{outline:none;border-color:var(--navy-400);box-shadow:0 0 0 3px rgba(45,90,168,.1)}
+.btn{padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--navy-600);color:#fff}
+.btn-primary:hover{background:var(--navy-700)}
+.btn-secondary{background:var(--gray-100);color:var(--gray-700)}
+.btn-secondary:hover{background:var(--gray-200)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{filter:brightness(.92)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{filter:brightness(.92)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-block{width:100%;justify-content:center}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,31,68,.5);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius);width:100%;max-width:720px;box-shadow:var(--shadow-md);margin-bottom:40px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-100)}
+.modal-title{font-size:16px;font-weight:600;color:var(--navy-800)}
+.modal-close{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--gray-100)}
+.modal-close svg{width:18px;height:18px}
+.modal-body{padding:20px;max-height:65vh;overflow-y:auto}
+.modal-tabs{display:flex;gap:0;border-bottom:1px solid var(--gray-200);margin:-20px -20px 16px;flex-wrap:wrap}
+.modal-tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent}
+.modal-tab.active{color:var(--navy-600);border-bottom-color:var(--navy-600);font-weight:600}
+.modal-tab:hover{color:var(--navy-600)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.detail-grid{display:grid;grid-template-columns:140px 1fr;gap:8px 16px;font-size:13px}
+.detail-grid dt{color:var(--gray-500)}
+.detail-grid dd{color:var(--gray-700);font-weight:500}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--gray-200);margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.tab.active{color:var(--navy-600);border-bottom-color:var(--navy-600);font-weight:600}
+.tab:hover{color:var(--navy-600);background:var(--gray-50)}
+
+/* Notification list */
+.notif-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .15s;border:1px solid var(--gray-100);margin-bottom:8px}
+.notif-item:hover{background:var(--gray-50);border-color:var(--gray-200)}
+.notif-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-icon svg{width:18px;height:18px}
+.notif-content{flex:1}
+.notif-title{font-size:13px;font-weight:600;color:var(--navy-800)}
+.notif-desc{font-size:12px;color:var(--gray-500)}
+
+/* Folder grid */
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.folder-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:all .15s}
+.folder-card:hover{box-shadow:var(--shadow-md);border-color:var(--navy-300);transform:translateY(-2px)}
+.folder-icon{width:48px;height:48px;margin:0 auto 10px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.folder-icon svg{width:26px;height:26px}
+.folder-name{font-size:13px;font-weight:600;color:var(--navy-800)}
+.folder-count{font-size:11px;color:var(--gray-400);margin-top:2px}
+
+/* Nine-box */
+.nine-box{display:grid;grid-template-columns:60px 1fr 1fr 1fr;grid-template-rows:40px 1fr 1fr 1fr;gap:6px;max-width:680px}
+.nine-axis-y{writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gray-500);text-align:center}
+.nine-axis-x{grid-column:2/5;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gray-500)}
+.nine-cell{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:8px;min-height:90px;display:flex;flex-direction:column;gap:4px}
+.nine-cell-label{font-size:10px;color:var(--gray-400);font-weight:600}
+.nine-avatar{width:26px;height:26px;border-radius:50%;font-size:10px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.nine-cell.high{background:var(--green-bg);border-color:var(--green)}
+.nine-cell.med{background:var(--yellow-bg);border-color:var(--yellow)}
+.nine-cell.low{background:var(--red-bg);border-color:var(--red)}
+
+/* Org chart */
+.org-tree{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.org-node{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);padding:10px 16px;text-align:center;min-width:160px;box-shadow:var(--shadow);position:relative}
+.org-node.vacant{border:2px dashed var(--gray-300);background:var(--gray-50)}
+.org-node-title{font-size:13px;font-weight:600;color:var(--navy-800)}
+.org-node-name{font-size:11px;color:var(--gray-500);margin-top:2px}
+.org-children{display:flex;gap:20px;position:relative;margin-top:24px}
+.org-children::before{content:'';position:absolute;top:-24px;left:50%;width:1px;height:24px;background:var(--gray-300)}
+.org-child-wrap{position:relative}
+.org-child-wrap::before{content:'';position:absolute;top:-24px;left:0;width:100%;height:24px;border-left:1px solid var(--gray-300);border-right:1px solid var(--gray-300);border-top:1px solid var(--gray-300)}
+.org-child-wrap:first-child::before{left:50%;border-left:none}
+.org-child-wrap:last-child::before{right:50%;border-right:none}
+.org-level{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+
+/* Kanban */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kanban-col{background:var(--gray-50);border-radius:var(--radius);padding:12px;min-height:200px}
+.kanban-col-header{font-size:13px;font-weight:600;color:var(--navy-800);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.kanban-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.kanban-card-name{font-size:13px;font-weight:600;color:var(--navy-800)}
+.kanban-card-pos{font-size:11px;color:var(--gray-500);margin:2px 0 8px}
+
+/* Progress */
+.progress{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden}
+.progress-bar{height:100%;border-radius:4px;transition:width .3s}
+
+/* Gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center}
+.gauge{position:relative;width:180px;height:100px}
+.gauge svg{width:100%;height:100%}
+.gauge-value{position:absolute;bottom:0;left:50%;transform:translateX(-50%);text-align:center}
+.gauge-value b{font-size:28px;font-weight:700;color:var(--navy-900);display:block}
+.gauge-value span{font-size:11px;color:var(--gray-500)}
+
+/* Accordion */
+.accordion-item{border:1px solid var(--gray-200);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden}
+.accordion-header{padding:12px 16px;background:var(--gray-50);font-size:13px;font-weight:600;color:var(--navy-800);cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.accordion-header svg{width:16px;height:16px;transition:transform .2s}
+.accordion-item.open .accordion-header svg{transform:rotate(180deg)}
+.accordion-body{padding:0 16px;max-height:0;overflow:hidden;transition:all .2s}
+.accordion-item.open .accordion-body{padding:12px 16px;max-height:500px}
+
+/* Handbook */
+.handbook{display:grid;grid-template-columns:220px 1fr;gap:20px}
+.toc-item{padding:8px 12px;font-size:13px;color:var(--gray-600);cursor:pointer;border-radius:var(--radius-sm);border-left:3px solid transparent}
+.toc-item:hover{background:var(--gray-50)}
+.toc-item.active{background:var(--blue-bg);color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.handbook-content{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);min-height:400px}
+.handbook-content h3{font-size:18px;color:var(--navy-800);margin-bottom:12px}
+.handbook-content p{font-size:14px;color:var(--gray-600);margin-bottom:12px;line-height:1.7}
+
+/* Leaderboard */
+.leaderboard-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:var(--radius-sm)}
+.leaderboard-item:nth-child(1){background:#fef9c3}
+.leaderboard-item:nth-child(2){background:var(--gray-100)}
+.leaderboard-item:nth-child(3){background:#fed7aa}
+.lb-rank{width:28px;height:28px;border-radius:50%;background:var(--navy-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.lb-info{flex:1}
+.lb-name{font-size:13px;font-weight:600;color:var(--navy-800)}
+.lb-val{font-size:12px;color:var(--gray-500)}
+.lb-bar{width:80px;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden}
+.lb-bar-fill{height:100%;background:var(--green);border-radius:3px}
+
+/* Access restricted */
+.access-restricted{text-align:center;padding:60px 20px}
+.access-restricted svg{width:64px;height:64px;color:var(--gray-300);margin-bottom:16px}
+.access-restricted h3{font-size:18px;color:var(--navy-800);margin-bottom:8px}
+.access-restricted p{color:var(--gray-500);max-width:400px;margin:0 auto}
+
+/* Responsive */
+@media(max-width:1024px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:1fr}
+  .kanban{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-264px)}
+  .sidebar.collapsed{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:flex}
+  .grid-2{grid-template-columns:1fr}
+  .handbook{grid-template-columns:1fr}
+  .kanban{grid-template-columns:1fr}
+  .topbar-user .user-info{display:none}
+  .content{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+      </div>
+      <div>
+        <div class="sidebar-title">Hasnur Centre</div>
+        <div class="sidebar-sub">Human Capital System</div>
+      </div>
+    </div>
+    <nav id="navMenu"></nav>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <div class="breadcrumb" id="breadcrumb">Dashboard / <b>Overview</b></div>
+      <div class="role-switcher">
+        <button class="role-btn" onclick="toggleRoleDropdown()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="roleLabel">Super Admin</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="role-dropdown" id="roleDropdown">
+          <div class="role-option selected" onclick="switchRole('superadmin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>Super Admin</div>
+          <div class="role-option" onclick="switchRole('hc')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7L9 18l-5-5"/></svg>Tim HC</div>
+          <div class="role-option" onclick="switchRole('pic')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7L9 18l-5-5"/></svg>PIC Unit Kerja</div>
+          <div class="role-option" onclick="switchRole('employee')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Employee (ESS)</div>
+        </div>
+      </div>
+      <div class="topbar-user">
+        <div class="user-avatar" id="userAvatar">SA</div>
+        <div class="user-info"><b id="userName">Admin Sistem</b><span id="userRoleText">Super Admin</span></div>
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOverlay(event)">
+  <div class="modal" id="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Detail</div>
+      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ============ DATA LAYER (DUMMY DB) ============
+var UNITS = ["Pendidikan","Kesehatan","Sosial","Dakwah","Pengembangan","Administrasi"];
+var AREAS = ["Banjarmasin","Banjarbaru","Rantau","Pelaihari","Jakarta","Balikpapan"];
+var GRADES = ["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5"];
+var JABATAN = ["Kepala Unit","Supervisor","Staff Senior","Staff Junior","Operator","Koordinator"];
+var NAMES = ["Ahmad Fauzi","Siti Nurhaliza","Rahmat Hidayat","Dewi Lestari","Bambang Wijaya","Nurhayati","M. Rizki","Fitriani","Joko Susilo","Maya Sari","Andi Pratama","Rina Marlina","Hendra Gunawan","Lia Amalia","Eko Prasetyo","Wati Sukma","Dedi Kurniawan","Yuni Astuti","Fajar Ramadhan","Sri Wahyuni"];
+
+function initials(n){var p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
+function rand(a){return a[Math.floor(Math.random()*a.length)];}
+
+var EMPLOYEES = [];
+for(var i=0;i<20;i++){
+  var n=NAMES[i];
+  var st=Math.random()>.1?"aktif":"nonaktif";
+  var jp=Math.random()>.5?"PKWTT":"PKWT";
+  EMPLOYEES.push({
+    id:i+1, nama:n, nrp:"NRP-"+(1001+i), unit:rand(UNITS), area:rand(AREAS),
+    jabatan:rand(JABATAN), grade:rand(GRADES), gender:Math.random()>.5?"L":"P",
+    status:st, jenis:jp, tglMasuk:"20"+(10+Math.floor(Math.random()*14))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9),
+    tglLahir:"19"+(70+Math.floor(Math.random()*20))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9),
+    phone:"08"+(10000000+Math.floor(Math.random()*89999999)),
+    email:n.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",
+    alamat:"Jl. "+rand(["Merdeka","Sudirman","Ahmad Yani","Gatot Subroto","Diponegoro"])+", "+rand(AREAS),
+    gaji:3000000+Math.floor(Math.random()*7)*1000000,
+    statusKawin:Math.random()>.4?"Menikah":"Lajang",
+    anak:Math.floor(Math.random()*4),
+    pendidikan:rand(["S1","S2","D3","SMA","S1","S2"]),
+    jurusan:rand(["Manajemen","Akuntansi","Teknik","Hukum","Kesehatan","Pendidikan"]),
+    bpjs:"BPJS-"+(20001+i), npwp:"NPWP-"+(30001+i), bank:rand(["BCA","Mandiri","BNI","BRI"])
+  });
+}
+
+var CONTRACTS = EMPLOYEES.slice(0,12).map(function(e,i){
+  var ke=1+Math.floor(Math.random()*3);
+  var end="2026-0"+(1+Math.floor(Math.random()*9))+"-15";
+  var statusC="aktif";
+  if(end<"2026-03")statusC="expired";
+  else if(end<"2026-08")statusC="mendekati berakhir";
+  return {id:i+1, emp:e, jenis:e.jenis, tglKontrak:"2025-01-15", tglBerakhir:end, kontrakKe:ke, status:statusC};
+});
+
+var ATTENDANCE = EMPLOYEES.map(function(e,i){
+  return {emp:e, hadir:18+Math.floor(Math.random()*4), terlambat:Math.floor(Math.random()*5), izin:Math.floor(Math.random()*3), sakit:Math.floor(Math.random()*2), alpa:Math.floor(Math.random()*2), wfh:Math.floor(Math.random()*4)};
+});
+
+var NOTIFS = [
+  {type:"contract",icon:"file",color:"red",title:"Kontrak akan berakhir","desc":"5 karyawan PKWT kontrak berakhir < 30 hari",target:"kontrak"},
+  {type:"birthday",icon:"cake",color:"yellow",title:"Ulang tahun bulan ini","desc":"8 karyawan berulang tahun bulan Juli",target:"overview"},
+  {type:"pension",icon:"clock",color:"yellow",title:"Masa pensiun mendekat","desc":"2 karyawan akan mencapai usia pensiun",target:"pensiun"},
+  {type:"cert",icon:"award",color:"blue",title:"Sertifikat expired","desc":"3 sertifikat kompetensi akan expired",target:"training"},
+  {type:"leave",icon:"calendar",color:"green",title:"Pengajuan cuti menunggu approval","desc":"4 pengajuan cuti menunggu persetujuan",target:"workflow"}
+];
+
+var WORKFLOWS = [
+  {id:1,jenis:"PKWT",nama:"Rizki Ananda",pos:"Staff Pendidikan",tanggal:"2026-06-28",status:"Pending",approver:"Tim HC"},
+  {id:2,jenis:"Pengangkatan",nama:"Sari Dewi",pos:"Koordinator Sosial",tanggal:"2026-06-25",status:"Pending",approver:"Kepala Unit"},
+  {id:3,jenis:"Mutasi",nama:"Hendra G.",pos:"Supervisor Dakwah",tanggal:"2026-06-20",status:"Approved",approver:"Tim HC"},
+  {id:4,jenis:"Promosi",nama:"Maya Sari",pos:"Kepala Unit Pendidikan",tanggal:"2026-06-18",status:"Approved",approver:"Direktur"},
+  {id:5,jenis:"Cuti",nama:"Joko Susilo",pos:"Staff Administrasi",tanggal:"2026-06-15",status:"Pending",approver:"PIC Unit"},
+  {id:6,jenis:"Surat Tugas",nama:"Fitriani",pos:"Staff Kesehatan",tanggal:"2026-06-12",status:"Rejected",approver:"Tim HC"},
+  {id:7,jenis:"Lembur",nama:"Andi Pratama",pos:"Operator",tanggal:"2026-06-10",status:"Approved",approver:"Supervisor"}
+];
+
+var RECRUITS = [
+  {id:1,nama:"Budi Santoso",pos:"Staff IT",stage:"Screening"},
+  {id:2,nama:"Citra Kirana",pos:"Accounting",stage:"Screening"},
+  {id:3,nama:"Dimas Anggara",pos:"Staff HRD",stage:"Interview"},
+  {id:4,nama:"Eka Putri",pos:"Marketing",stage:"Interview"},
+  {id:5,nama:"Fauzan R.",pos:"Staff Pendidikan",stage:"Offer"},
+  {id:6,nama:"Gita Savitri",pos:"Staff Kesehatan",stage:"Hired"}
+];
+
+var POLICIES = [
+  {id:1,kategori:"Peraturan & Kebijakan",judul:"Peraturan Disiplin Kerja",read:false},
+  {id:2,kategori:"Peraturan & Kebijakan",judul:"Sistem Remunerasi & Tunjangan",read:false},
+  {id:3,kategori:"Pedoman Etika",judul:"Kode Etik Karyawan",read:false},
+  {id:4,kategori:"Pedoman Etika",judul:"Whistleblowing System",read:false},
+  {id:5,kategori:"Budaya Organisasi",judul:"7 Nilai Hasnur Centre",read:false},
+  {id:6,kategori:"Pedoman Penampilan",judul:"Standar Busana Kerja",read:false},
+  {id:7,kategori:"Orientasi Karyawan Baru",judul:"Panduan Onboarding",read:false}
+];
+
+var HANDBOOK_SECTIONS = [
+  {id:"profil",title:"Profil Yayasan",content:"Yayasan Hasnur Centre adalah organisasi nirlaba yang bergerak di bidang pendidikan, kesehatan, sosial, dan dakwah. Didirikan dengan komitmen untuk memberikan kontribusi nyata bagi masyarakat."},
+  {id:"struktur",title:"Struktur Organisasi",content:"Yayasan dipimpin oleh Ketua Dewan Pembina, di bawahnya terdapat Direktur Eksekutif yang mengawasi 6 unit kerja utama: Pendidikan, Kesehatan, Sosial, Dakwah, Pengembangan, dan Administrasi."},
+  {id:"visimisi",title:"Visi & Misi",content:"Visi: Menjadi yayasan terkemuka dalam pemberdayaan masyarakat berbasis nilai Islami. Misi: Memberikan layanan pendidikan, kesehatan, dan sosial yang berkualitas serta berkelanjutan."},
+  {id:"nilai",title:"7 Nilai Hasnur",content:"1. Integritas, 2. Profesionalisme, 3. Inovasi, 4. Kolaborasi, 5. Empati, 6. Akuntabilitas, 7. Keberkahan. Nilai-nilai ini menjadi panduan perilaku seluruh insan Hasnur Centre."},
+  {id:"etika",title:"Kode Etik",content:"Setiap karyawan wajib menjaga nama baik yayasan, menjunjung tinggi kejujuran, menjaga kerahasiaan informasi, dan tidak melakukan tindakan yang merugikan organisasi maupun rekan kerja."},
+  {id:"disiplin",title:"Aturan Disiplin",content:"Jam kerja: 08.00-16.00 WIB. Keterlambatan lebih dari 15 menit dikenakan potongan tunjangan kehadiran. Ketidakhadiran wajib dilaporkan maksimal H-1."},
+  {id:"cuti",title:"Kebijakan Cuti",content:"Cuti tahunan 12 hari kerja. Cuti melahirkan 90 hari. Cuti sakit dengan surat dokter. Pengajuan cuti minimal 3 hari sebelumnya melalui sistem ESS."},
+  {id:"pengembangan",title:"Pengembangan Karir",content:"Yayasan menyediakan program training, sertifikasi, dan beasiswa tugas belajar. Promosi didasarkan pada penilaian kinerja dan potensi melalui talent mapping."}
+];
+
+var LEAVE_REQUESTS = [];
+
+// ============ NAVIGATION CONFIG ============
+var NAV_CONFIG = [
+  {group:"Utama",items:[
+    {id:"overview",label:"Dashboard Overview",icon:"home",roles:["superadmin","hc","pic","employee"]},
+    {id:"karyawan",label:"Master Data Karyawan",icon:"users",roles:["superadmin","hc","pic"]},
+    {id:"hakakses",label:"Manajemen Hak Akses",icon:"lock",roles:["superadmin","hc"]}
+  ]},
+  {group:"Dashboard Analitik",items:[
+    {id:"manpower",label:"Dashboard Manpower",icon:"bar-chart",roles:["superadmin","hc","pic"]},
+    {id:"turnover",label:"Dashboard Turnover",icon:"trending",roles:["superadmin","hc"]},
+    {id:"kontrak",label:"Dashboard Kontrak & Masa Kerja",icon:"file-text",roles:["superadmin","hc","pic"]},
+    {id:"cuti",label:"Dashboard Cuti & Absensi",icon:"calendar",roles:["superadmin","hc","pic"]},
+    {id:"absensi",label:"Absensi & Tunjangan Kehadiran",icon:"clock",roles:["superadmin","hc","pic"]}
+  ]},
+  {group:"Manajemen SDM",items:[
+    {id:"dokumen",label:"Digital Document Management",icon:"folder",roles:["superadmin","hc","pic"]},
+    {id:"pensiun",label:"Perhitungan Pensiun & Pesangon",icon:"calculator",roles:["superadmin","hc"]},
+    {id:"kinerja",label:"Penilaian Kinerja",icon:"star",roles:["superadmin","hc","pic"]},
+    {id:"talent",label:"Talent Pool & Succession Planning",icon:"grid",roles:["superadmin","hc"]},
+    {id:"training",label:"Training & Development",icon:"book",roles:["superadmin","hc","pic","employee"]},
+    {id:"workflow",label:"Workflow Persetujuan Digital",icon:"check-circle",roles:["superadmin","hc","pic"]}
+  ]},
+  {group:"Organisasi & Layanan",items:[
+    {id:"orgchart",label:"Organizational Chart",icon:"git-branch",roles:["superadmin","hc","pic","employee"]},
+    {id:"ess",label:"Employee Self Service (ESS)",icon:"user",roles:["superadmin","hc","employee"]},
+    {id:"recruitment",label:"Recruitment Database",icon:"briefcase",roles:["superadmin","hc"]},
+    {id:"kebijakan",label:"Pusat Informasi Kebijakan & Budaya",icon:"info",roles:["superadmin","hc","pic","employee"]},
+    {id:"handbook",label:"Digital Employee Handbook",icon:"book-open",roles:["superadmin","hc","pic","employee"]}
+  ]}
+];
+
+var ICONS = {
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  "bar-chart":'<path d="M12 20V10M18 20V4M6 20v-6"/>',
+  trending:'<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+  "file-text":'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8M16 17H8M10 9H8"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  calculator:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/>',
+  star:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/>',
+  grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  "check-circle":'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+  "git-branch":'<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  "book-open":'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  cake:'<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8 M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1 M2 21h20 M12 11V7 M12 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>',
+  award:'<circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/>',
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  alert:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  chevron:'<path d="M9 18l6-6-6-6"/>'
+};
+
+function svgIcon(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.info)+'</svg>';}
+
+// ============ STATE ============
+var currentRole="superadmin";
+var currentSection="overview";
+var ROLE_LABELS={superadmin:"Super Admin",hc:"Tim HC",pic:"PIC Unit Kerja",employee:"Employee (ESS)"};
+var ROLE_USERS={superadmin:{name:"Admin Sistem",av:"SA"},hc:{name:"Tim HC",av:"HC"},pic:{name:"PIC Unit",av:"PU"},employee:{name:"Ahmad Fauzi",av:"AF"}};
+
+// ============ RBAC PERMISSION MATRIX ============
+// Permissions per role: create, read, update, delete, import, export, upload, approve
+var RBAC={
+  superadmin:{create:true,read:true,update:true,delete:true,import:true,export:true,upload:true,approve:true},
+  hc:{create:true,read:true,update:true,delete:true,import:true,export:true,upload:true,approve:true},
+  pic:{create:false,read:true,update:true,delete:false,import:false,export:true,upload:true,approve:true},
+  employee:{create:false,read:true,update:false,delete:false,import:false,export:false,upload:false,approve:false}
+};
+function can(action){return RBAC[currentRole]&&RBAC[currentRole][action]===true;}
+function roleBadge(){return '<span class="badge badge-blue" style="margin-left:8px">'+ROLE_LABELS[currentRole]+'</span>';}
+
+// ============ NAVIGATION RENDER ============
+function renderNav(){
+  var nav=document.getElementById("navMenu");
+  nav.innerHTML="";
+  NAV_CONFIG.forEach(function(g){
+    var gl=document.createElement("div");
+    gl.className="nav-group-label";
+    gl.textContent=g.group;
+    nav.appendChild(gl);
+    g.items.forEach(function(it){
+      if(it.roles.indexOf(currentRole)===-1)return;
+      var el=document.createElement("div");
+      el.className="nav-item"+(it.id===currentSection?" active":"");
+      el.setAttribute("data-section",it.id);
+      el.innerHTML=svgIcon(it.icon)+'<span>'+it.label+'</span>';
+      el.onclick=function(){navigateTo(it.id);};
+      nav.appendChild(el);
+    });
+  });
+}
+
+function navigateTo(section){
+  currentSection=section;
+  renderNav();
+  renderSection(section);
+  updateBreadcrumb(section);
+  if(window.innerWidth<=768)closeSidebar();
+  document.getElementById("content").scrollTop=0;
+}
+
+function updateBreadcrumb(section){
+  var labels={overview:"Overview",karyawan:"Master Data Karyawan",hakakses:"Manajemen Hak Akses",manpower:"Dashboard Manpower",turnover:"Dashboard Turnover",kontrak:"Kontrak & Masa Kerja",cuti:"Cuti & Absensi",absensi:"Absensi & Tunjangan Kehadiran",dokumen:"Digital Document Management",pensiun:"Pensiun & Pesangon",kinerja:"Penilaian Kinerja",talent:"Talent Pool & Succession",training:"Training & Development",workflow:"Workflow Persetujuan",orgchart:"Organizational Chart",ess:"Employee Self Service",recruitment:"Recruitment Database",kebijakan:"Kebijakan & Budaya",handbook:"Digital Employee Handbook"};
+  var groupMap={};
+  NAV_CONFIG.forEach(function(g){g.items.forEach(function(it){groupMap[it.id]=g.group;});});
+  var grp=groupMap[section]||"Utama";
+  document.getElementById("breadcrumb").innerHTML=grp+' / <b>'+(labels[section]||section)+'</b>';
+}
+
+// ============ ROLE SWITCHER ============
+function toggleRoleDropdown(){document.getElementById("roleDropdown").classList.toggle("open");}
+function switchRole(role){
+  currentRole=role;
+  document.getElementById("roleLabel").textContent=ROLE_LABELS[role];
+  document.querySelectorAll(".role-option").forEach(function(o){o.classList.remove("selected");});
+  var opts=document.querySelectorAll(".role-option");
+  var idx=["superadmin","hc","pic","employee"].indexOf(role);
+  if(opts[idx])opts[idx].classList.add("selected");
+  document.getElementById("roleDropdown").classList.remove("open");
+  var u=ROLE_USERS[role];
+  document.getElementById("userName").textContent=u.name;
+  document.getElementById("userAvatar").textContent=u.av;
+  document.getElementById("userRoleText").textContent=ROLE_LABELS[role];
+  // navigate to a valid section for this role
+  var validSection="overview";
+  if(role==="employee")validSection="ess";
+  else if(currentSection==="hakakses"&&role==="pic")validSection="overview";
+  navigateTo(validSection);
+}
+document.addEventListener("click",function(e){
+  if(!e.target.closest(".role-switcher"))document.getElementById("roleDropdown").classList.remove("open");
+});
+
+// ============ SIDEBAR ============
+function toggleSidebar(){document.getElementById("sidebar").classList.toggle("collapsed");document.getElementById("main").classList.toggle("full");}
+function closeSidebar(){document.getElementById("sidebar").classList.add("collapsed");document.getElementById("main").classList.add("full");}
+
+// ============ MODAL ============
+function openModal(title,bodyHTML){
+  document.getElementById("modalTitle").textContent=title;
+  document.getElementById("modalBody").innerHTML=bodyHTML;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+function closeModal(){document.getElementById("modalOverlay").classList.remove("open");}
+function closeModalOverlay(e){if(e.target===document.getElementById("modalOverlay"))closeModal();}
+
+// ============ SECTION RENDERER ============
+function renderSection(section){
+  var c=document.getElementById("content");
+  // Check access
+  var secConfig=null;
+  NAV_CONFIG.forEach(function(g){g.items.forEach(function(it){if(it.id===section)secConfig=it;});});
+  if(secConfig&&secConfig.roles.indexOf(currentRole)===-1){
+    c.innerHTML=restrictedHTML();
+    return;
+  }
+  var fn=RENDERERS[section]||function(){c.innerHTML="<p>Modul belum tersedia.</p>";};
+  fn(c);
+}
+
+function restrictedHTML(){
+  return '<div class="access-restricted">'+svgIcon("lock")+'<h3>Akses Terbatas</h3><p>Anda tidak memiliki izin untuk mengakses modul ini dengan role saat ini. Silakan hubungi administrator sistem.</p></div>';
+}
+
+// ============ RENDERERS ============
+var RENDERERS={};
+
+// A. Dashboard Overview
+RENDERERS.overview=function(c){
+  var total=EMPLOYEES.length;
+  var pkwt=EMPLOYEES.filter(function(e){return e.jenis==="PKWT";}).length;
+  var pkwtt=total-pkwt;
+  var aktif=EMPLOYEES.filter(function(e){return e.status==="aktif";}).length;
+  var hadirPct=Math.round(ATTENDANCE.reduce(function(s,a){return s+a.hadir;},0)/(ATTENDANCE.length*22)*100);
+  var male=EMPLOYEES.filter(function(e){return e.gender==="L";}).length;
+  var female=total-male;
+  var h='';
+  h+='<div class="page-title">Dashboard Overview</div><div class="page-desc">Ringkasan data human capital Yayasan Hasnur Centre</div>';
+  // KPI
+  h+='<div class="kpi-grid">';
+  h+=kpiCard("users",total,"Total Karyawan",""+aktif+" aktif","var(--navy-600)","var(--blue-bg)");
+  h+=kpiCard("trending","3.2%","Turnover Rate Bulan Ini",""+2+" resign bulan ini","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("file-text",pkwt+" / "+pkwtt,"PKWT vs PKWTT",""+pkwt+" PKWT, "+pkwtt+" PKWTT","var(--yellow)","var(--yellow-bg)");
+  h+=kpiCard("clock",hadirPct+"%","Tingkat Kehadiran","Target 95%","var(--green)","var(--green-bg)",hadirPct>=95?"up":"down");
+  h+=kpiCard("check-circle","7","Pengajuan Pending","Workflow persetujuan","var(--navy-600)","var(--blue-bg)");
+  h+=kpiCard("calendar","12","Cuti Tahunan","Rata-rata sisa cuti","var(--navy-600)","var(--gray-100)");
+  h+='</div>';
+  // Charts row
+  h+='<div class="grid-2">';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Karyawan per Unit Kerja</div></div>';
+  h+=barChartSVG(UNITS.map(function(u){return {label:u,val:EMPLOYEES.filter(function(e){return e.unit===u;}).length};}));
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Karyawan per Gender</div></div>';
+  h+=donutSVG([{label:"Laki-laki",val:male,color:"#23488f"},{label:"Perempuan",val:female,color:"#7ba0d8"}]);
+  h+='</div></div>';
+  // Notifications
+  h+='<div class="card"><div class="card-header"><div class="card-title">Reminder & Notifikasi Otomatis</div><span class="badge badge-blue">'+NOTIFS.length+' item</span></div>';
+  NOTIFS.forEach(function(n){
+    var bg=n.color==="red"?"var(--red-bg)":n.color==="yellow"?"var(--yellow-bg)":n.color==="blue"?"var(--blue-bg)":"var(--green-bg)";
+    var fg=n.color==="red"?"var(--red)":n.color==="yellow"?"var(--yellow)":n.color==="blue"?"var(--blue)":"var(--green)";
+    h+='<div class="notif-item" onclick="navigateTo(\''+n.target+'\')">';
+    h+='<div class="notif-icon" style="background:'+bg+';color:'+fg+'">'+svgIcon(n.icon)+'</div>';
+    h+='<div class="notif-content"><div class="notif-title">'+n.title+'</div><div class="notif-desc">'+n.desc+'</div></div>';
+    h+='<span class="badge badge-'+n.color+'">'+(n.color==="red"?"Urgent":n.color==="yellow"?"Warning":n.color==="blue"?"Info":"Normal")+'</span>';
+    h+='</div>';
+  });
+  h+='</div>';
+  c.innerHTML=h;
+};
+
+function kpiCard(icon,value,label,sub,bg,iconBg,trend){
+  var t=trend?'<div class="kpi-trend '+(trend==="up"?"up":"down")+'">'+(trend==="up"?"▲":"▼")+'</div>':'';
+  return '<div class="kpi-card"><div class="kpi-icon" style="background:'+iconBg+';color:'+bg+'">'+svgIcon(icon)+'</div><div class="kpi-info"><div class="kpi-label">'+label+'</div><div class="kpi-value">'+value+'</div><div class="kpi-sub">'+sub+'</div></div>'+t+'</div>';
+}
+
+// SVG Bar Chart
+function barChartSVG(data){
+  var max=Math.max.apply(null,data.map(function(d){return d.val;}));
+  var w=480,h=200,pad=30,bw=40,gap=(w-pad*2-bw*data.length)/(data.length-1);
+  var h2='';
+  h2+='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:200px">';
+  // grid lines
+  for(var i=0;i<=4;i++){
+    var y=h-pad-(h-pad*2)*i/4;
+    h2+='<line x1="'+pad+'" y1="'+y+'" x2="'+(w-pad)+'" y2="'+y+'" stroke="#eef0f4" stroke-width="1"/>';
+    h2+='<text x="'+(pad-4)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="#9aa1b1">'+Math.round(max*i/4)+'</text>';
+  }
+  data.forEach(function(d,i){
+    var x=pad+i*(bw+gap);
+    var bh=(h-pad*2)*(d.val/max);
+    var y=h-pad-bh;
+    h2+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="3" fill="#2d5aa8"/>';
+    h2+='<text x="'+(x+bw/2)+'" y="'+(y-4)+'" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">'+d.val+'</text>';
+    h2+='<text x="'+(x+bw/2)+'" y="'+(h-10)+'" text-anchor="middle" font-size="9" fill="#6b7280">'+d.label.substring(0,8)+'</text>';
+  });
+  h2+='</svg>';
+  return h2;
+}
+
+// SVG Donut Chart
+function donutSVG(data){
+  var total=data.reduce(function(s,d){return s+d.val;},0);
+  var cx=100,cy=100,r=70,r2=45;
+  var h2='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">';
+  h2+='<svg viewBox="0 0 200 200" style="width:180px;height:180px">';
+  var angle=-90;
+  data.forEach(function(d){
+    var pct=d.val/total;
+    var sweep=pct*360;
+    var rad=(angle+sweep/2)*Math.PI/180;
+    var x1=cx+r*Math.cos(angle*Math.PI/180);
+    var y1=cy+r*Math.sin(angle*Math.PI/180);
+    var x2=cx+r*Math.cos((angle+sweep)*Math.PI/180);
+    var y2=cy+r*Math.sin((angle+sweep)*Math.PI/180);
+    var large=sweep>180?1:0;
+    var xi1=cx+r2*Math.cos(angle*Math.PI/180);
+    var yi1=cy+r2*Math.sin(angle*Math.PI/180);
+    var xi2=cx+r2*Math.cos((angle+sweep)*Math.PI/180);
+    var yi2=cy+r2*Math.sin((angle+sweep)*Math.PI/180);
+    h2+='<path d="M'+x1+' '+y1+' A'+r+' '+r+' 0 '+large+' 1 '+x2+' '+y2+' L'+xi2+' '+yi2+' A'+r2+' '+r2+' 0 '+large+' 0 '+xi1+' '+yi1+' Z" fill="'+d.color+'"/>';
+    angle+=sweep;
+  });
+  h2+='<text x="100" y="95" text-anchor="middle" font-size="22" font-weight="700" fill="#0a1f44">'+total+'</text>';
+  h2+='<text x="100" y="112" text-anchor="middle" font-size="10" fill="#9aa1b1">Total</text>';
+  h2+='</svg>';
+  h2+='<div>';
+  data.forEach(function(d){
+    h2+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:12px;height:12px;border-radius:3px;background:'+d.color+';display:inline-block"></span><span style="font-size:13px;color:#374151">'+d.label+': <b>'+d.val+'</b> ('+Math.round(d.val/total*100)+'%)</span></div>';
+  });
+  h2+='</div></div>';
+  return h2;
+}
+
+// SVG Line Chart
+function lineChartSVG(data,labels){
+  var w=520,h=200,pad=30;
+  var max=Math.max.apply(null,data)*1.15;
+  var min=Math.min.apply(null,data)*0.85;
+  var h2='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:200px">';
+  for(var i=0;i<=4;i++){
+    var y=h-pad-(h-pad*2)*i/4;
+    h2+='<line x1="'+pad+'" y1="'+y+'" x2="'+(w-pad)+'" y2="'+y+'" stroke="#eef0f4"/>';
+    h2+='<text x="'+(pad-4)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="#9aa1b1">'+Math.round(min+(max-min)*i/4)+'</text>';
+  }
+  var pts=data.map(function(v,i){
+    var x=pad+(w-pad*2)*i/(data.length-1);
+    var y=h-pad-(h-pad*2)*(v-min)/(max-min);
+    return {x:x,y:y};
+  });
+  var path=pts.map(function(p,i){return (i===0?"M":"L")+p.x+' '+p.y;}).join(" ");
+  h2+='<path d="'+path+'" fill="none" stroke="#2d5aa8" stroke-width="2.5"/>';
+  h2+='<path d="'+path+' L'+pts[pts.length-1].x+' '+(h-pad)+' L'+pts[0].x+' '+(h-pad)+' Z" fill="rgba(45,90,168,.1)"/>';
+  pts.forEach(function(p,i){
+    h2+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#fff" stroke="#2d5aa8" stroke-width="2"/>';
+    h2+='<text x="'+p.x+'" y="'+(h-8)+'" text-anchor="middle" font-size="9" fill="#6b7280">'+labels[i]+'</text>';
+  });
+  h2+='</svg>';
+  return h2;
+}
+
+// SVG Radar Chart
+function radarSVG(labels,values){
+  var cx=120,cy=120,r=80;
+  var n=labels.length;
+  var h2='<svg viewBox="0 0 240 240" style="width:240px;height:240px">';
+  for(var ring=1;ring<=4;ring++){
+    var rr=r*ring/4;
+    var pts=[];
+    for(var i=0;i<n;i++){
+      var a=-Math.PI/2+i*2*Math.PI/n;
+      pts.push((cx+rr*Math.cos(a))+','+(cy+rr*Math.sin(a)));
+    }
+    h2+='<polygon points="'+pts.join(' ')+'" fill="none" stroke="#eef0f4"/>';
+  }
+  for(var i=0;i<n;i++){
+    var a=-Math.PI/2+i*2*Math.PI/n;
+    h2+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+r*Math.cos(a))+'" y2="'+(cy+r*Math.sin(a))+'" stroke="#eef0f4"/>';
+    h2+='<text x="'+(cx+(r+12)*Math.cos(a))+'" y="'+(cy+(r+12)*Math.sin(a)+3)+'" text-anchor="middle" font-size="9" fill="#6b7280">'+labels[i]+'</text>';
+  }
+  var dataPts=values.map(function(v,i){
+    var a=-Math.PI/2+i*2*Math.PI/n;
+    var rr=r*v/100;
+    return (cx+rr*Math.cos(a))+','+(cy+rr*Math.sin(a));
+  });
+  h2+='<polygon points="'+dataPts.join(' ')+'" fill="rgba(45,90,168,.2)" stroke="#2d5aa8" stroke-width="2"/>';
+  values.forEach(function(v,i){
+    var a=-Math.PI/2+i*2*Math.PI/n;
+    var rr=r*v/100;
+    h2+='<circle cx="'+(cx+rr*Math.cos(a))+'" cy="'+(cy+rr*Math.sin(a))+'" r="3" fill="#2d5aa8"/>';
+  });
+  h2+='</svg>';
+  return h2;
+}
+
+// SVG Gauge
+function gaugeSVG(pct){
+  var cx=90,cy=90,r=70;
+  var start=-Math.PI,end=0;
+  var sweep=pct/100*Math.PI;
+  var x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
+  var x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+  var xi=cx+r*Math.cos(start+sweep),yi=cy+r*Math.sin(start+sweep);
+  var color=pct>=95?"#16a34a":pct>=80?"#ca8a04":"#dc2626";
+  var h2='<svg viewBox="0 0 180 110" style="width:180px;height:100px">';
+  h2+='<path d="M'+x1+' '+y1+' A'+r+' '+r+' 0 0 1 '+x2+' '+y2+'" fill="none" stroke="#eef0f4" stroke-width="14" stroke-linecap="round"/>';
+  h2+='<path d="M'+x1+' '+y1+' A'+r+' '+r+' 0 0 1 '+xi+' '+yi+'" fill="none" stroke="'+color+'" stroke-width="14" stroke-linecap="round"/>';
+  h2+='</svg>';
+  return '<div class="gauge-wrap"><div class="gauge">'+h2+'<div class="gauge-value"><b>'+pct+'%</b><span>Tingkat Kehadiran</span></div></div></div>';
+}
+
+// B. Master Data Karyawan
+RENDERERS.karyawan=function(c){
+  var h='<div class="page-title">Master Data Karyawan</div><div class="page-desc">Database pusat seluruh data karyawan Yayasan Hasnur Centre'+roleBadge()+'</div>';
+  h+='<div class="card">';
+  // Action toolbar
+  h+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+  if(can("create"))h+='<button class="btn btn-primary btn-sm" onclick="showAddEmpForm()">'+svgIcon("user")+' Tambah Karyawan</button>';
+  if(can("import"))h+='<button class="btn btn-secondary btn-sm" onclick="simulateImport()">'+svgIcon("download")+' Import (CSV/Excel)</button>';
+  if(can("export"))h+='<button class="btn btn-secondary btn-sm" onclick="simulateExport()">'+svgIcon("download")+' Export Data</button>';
+  h+='</div>';
+  h+='<div class="form-row">';
+  h+='<div class="form-group"><label>Cari Nama / NRP</label><input class="input" id="empSearch" placeholder="Ketik nama atau NRP..." oninput="filterEmployees()"></div>';
+  h+='<div class="form-group"><label>Unit Kerja</label><select id="filterUnit" onchange="filterEmployees()"><option value="">Semua</option>';
+  UNITS.forEach(function(u){h+='<option value="'+u+'">'+u+'</option>';});
+  h+='</select></div>';
+  h+='<div class="form-group"><label>Area Kerja</label><select id="filterArea" onchange="filterEmployees()"><option value="">Semua</option>';
+  AREAS.forEach(function(a){h+='<option value="'+a+'">'+a+'</option>';});
+  h+='</select></div>';
+  h+='<div class="form-group"><label>Jabatan</label><select id="filterJab" onchange="filterEmployees()"><option value="">Semua</option>';
+  JABATAN.forEach(function(j){h+='<option value="'+j+'">'+j+'</option>';});
+  h+='</select></div>';
+  h+='<div class="form-group"><label>Status Kepegawaian</label><select id="filterJenis" onchange="filterEmployees()"><option value="">Semua</option><option value="PKWTT">PKWTT</option><option value="PKWT">PKWT</option></select></div>';
+  h+='</div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>NRP</th><th>Unit Kerja</th><th>Area</th><th>Jabatan</th><th>Status</th><th>Kepegawaian</th>'+(can("update")||can("delete")?'<th>Aksi</th>':'')+'</tr></thead><tbody id="empTbody"></tbody></table></div>';
+  h+='</div>';
+  c.innerHTML=h;
+  filterEmployees();
+};
+
+function filterEmployees(){
+  var s=(document.getElementById("empSearch")?document.getElementById("empSearch").value:"").toLowerCase();
+  var u=document.getElementById("filterUnit")?document.getElementById("filterUnit").value:"";
+  var a=document.getElementById("filterArea")?document.getElementById("filterArea").value:"";
+  var j=document.getElementById("filterJab")?document.getElementById("filterJab").value:"";
+  var jp=document.getElementById("filterJenis")?document.getElementById("filterJenis").value:"";
+  var filtered=EMPLOYEES.filter(function(e){
+    if(s&&e.nama.toLowerCase().indexOf(s)===-1&&e.nrp.toLowerCase().indexOf(s)===-1)return false;
+    if(u&&e.unit!==u)return false;
+    if(a&&e.area!==a)return false;
+    if(j&&e.jabatan!==j)return false;
+    if(jp&&e.jenis!==jp)return false;
+    return true;
+  });
+  var tb=document.getElementById("empTbody");
+  if(filtered.length===0){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#9aa1b1;padding:24px">Tidak ada data ditemukan</td></tr>';return;}
+  var h='';
+  filtered.forEach(function(e){
+    var stBadge=e.status==="aktif"?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Nonaktif</span>';
+    var jpBadge=e.jenis==="PKWTT"?'<span class="badge badge-blue">PKWTT</span>':'<span class="badge badge-yellow">PKWT</span>';
+    var aksi='';
+    if(can("update"))aksi+='<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showEditEmpForm('+e.id+')">Edit</button> ';
+    if(can("delete"))aksi+='<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteEmp('+e.id+')">Hapus</button>';
+    h+='<tr class="clickable" onclick="showEmpDetail('+e.id+')">';
+    h+='<td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td>';
+    h+='<td>'+e.nrp+'</td><td>'+e.unit+'</td><td>'+e.area+'</td><td>'+e.jabatan+'</td><td>'+stBadge+'</td><td>'+jpBadge+'</td>';
+    if(aksi)h+='<td style="white-space:nowrap">'+aksi+'</td>';
+    h+='</tr>';
+  });
+  tb.innerHTML=h;
+}
+
+function showEmpDetail(id){
+  var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
+  if(!e)return;
+  var h='<div class="modal-tabs">';
+  var tabs=["Data Personal","Keluarga","Pendidikan","Pekerjaan","Payroll","BPJS","Perpajakan","Dokumen","Riwayat"];
+  tabs.forEach(function(t,i){
+    h+='<div class="modal-tab'+(i===0?" active":"")+'" onclick="switchModalTab(this,'+i+')">'+t+'</div>';
+  });
+  h+='</div>';
+  h+='<div id="tabContents">';
+  h+='<div class="tab-content active">'+empTabPersonal(e)+'</div>';
+  h+='<div class="tab-content">'+empTabKeluarga(e)+'</div>';
+  h+='<div class="tab-content">'+empTabPendidikan(e)+'</div>';
+  h+='<div class="tab-content">'+empTabPekerjaan(e)+'</div>';
+  h+='<div class="tab-content">'+empTabPayroll(e)+'</div>';
+  h+='<div class="tab-content">'+empTabBPJS(e)+'</div>';
+  h+='<div class="tab-content">'+empTabPajak(e)+'</div>';
+  h+='<div class="tab-content">'+empTabDokumen(e)+'</div>';
+  h+='<div class="tab-content">'+empTabRiwayat(e)+'</div>';
+  h+='</div>';
+  openModal("Detail Karyawan - "+e.nama,h);
+}
+
+function switchModalTab(el,idx){
+  el.parentNode.querySelectorAll(".modal-tab").forEach(function(t){t.classList.remove("active");});
+  el.classList.add("active");
+  var contents=el.parentNode.nextElementSibling.querySelectorAll(".tab-content");
+  contents.forEach(function(c,i){c.classList.toggle("active",i===idx);});
+}
+
+function dl(label,val){return '<dt>'+label+'</dt><dd>'+val+'</dd>';}
+function empTabPersonal(e){
+  return '<div class="detail-grid">'+dl("Nama Lengkap",e.nama)+dl("NRP",e.nrp)+dl("Tanggal Lahir",e.tglLahir)+dl("Jenis Kelamin",e.gender==="L"?"Laki-laki":"Perempuan")+dl("No. HP",e.phone)+dl("Email",e.email)+dl("Alamat",e.alamat)+dl("Status Pernikahan",e.statusKawin)+'</div>';
+}
+function empTabKeluarga(e){
+  return '<div class="detail-grid">'+dl("Status Pernikahan",e.statusKawin)+dl("Jumlah Anak",e.anak)+'</div><p style="margin-top:12px;color:#6b7280">Data pasangan dan anak dapat diperbarui melalui modul ESS.</p>';
+}
+function empTabPendidikan(e){
+  return '<div class="detail-grid">'+dl("Pendidikan Terakhir",e.pendidikan)+dl("Jurusan",e.jurusan)+'</div>';
+}
+function empTabPekerjaan(e){
+  return '<div class="detail-grid">'+dl("Unit Kerja",e.unit)+dl("Area Kerja",e.area)+dl("Jabatan",e.jabatan)+dl("Grade",e.grade)+dl("Jenis Kepegawaian",e.jenis)+dl("Tanggal Masuk",e.tglMasuk)+dl("Status",e.status)+'</div>';
+}
+function empTabPayroll(e){
+  return '<div class="detail-grid">'+dl("Gaji Pokok","Rp "+e.gaji.toLocaleString("id-ID"))+dl("Bank",e.bank)+dl("No. Rekening","****"+(1000+e.id))+'</div>';
+}
+function empTabBPJS(e){
+  return '<div class="detail-grid">'+dl("BPJS Kesehatan",e.bpjs)+dl("BPJS Ketenagakerjaan","TK-"+e.bpjs.substring(5))+'</div>';
+}
+function empTabPajak(e){
+  return '<div class="detail-grid">'+dl("NPWP",e.npwp)+dl("Status PTKP","TK/0")+'</div>';
+}
+function empTabDokumen(e){
+  var docs=["SK Pengangkatan","Ijazah","Sertifikat","KTP","KK","NPWP","BPJS"];
+  var h='<p style="margin-bottom:12px;color:#6b7280">Dokumen tersedia:</p>';
+  docs.forEach(function(d){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eef0f4">';
+    h+='<span style="display:flex;align-items:center;gap:8px">'+svgIcon("file")+' '+d+'</span>';
+    h+='<button class="btn btn-secondary btn-sm" onclick="simulateDownload(\''+d+' - '+e.nama+'\')">Download</button>';
+    h+='</div>';
+  });
+  return h;
+}
+function empTabRiwayat(e){
+  return '<p style="color:#6b7280">Riwayat perubahan data:</p><ul style="margin:8px 0 0 20px;color:#374151;font-size:13px"><li>2025-03-15: Mutasi unit kerja ke '+e.unit+'</li><li>2024-11-01: Perubahan jabatan menjadi '+e.jabatan+'</li><li>2024-06-10: Pembaruan data keluarga</li></ul>';
+}
+
+function showAddEmpForm(){
+  var h='<div class="form-row"><div class="form-group"><label>Nama Lengkap</label><input class="input" id="addNama" placeholder="Nama karyawan"></div><div class="form-group"><label>NRP</label><input class="input" id="addNrp" placeholder="NRP-XXXX"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Unit Kerja</label><select id="addUnit" class="input">';
+  UNITS.forEach(function(u){h+='<option value="'+u+'">'+u+'</option>';});
+  h+='</select></div><div class="form-group"><label>Area Kerja</label><select id="addArea" class="input">';
+  AREAS.forEach(function(a){h+='<option value="'+a+'">'+a+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jabatan</label><select id="addJab" class="input">';
+  JABATAN.forEach(function(j){h+='<option value="'+j+'">'+j+'</option>';});
+  h+='</select></div><div class="form-group"><label>Jenis Kepegawaian</label><select id="addJenis" class="input"><option value="PKWTT">PKWTT</option><option value="PKWT">PKWT</option></select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tanggal Masuk</label><input class="input" type="date" id="addMasuk" value="2026-07-01"></div><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="addGaji" value="3000000"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitAddEmp()">Simpan Karyawan</button>';
+  openModal("Tambah Karyawan Baru",h);
+}
+
+function submitAddEmp(){
+  var nama=document.getElementById("addNama").value.trim();
+  if(!nama){alert("Nama karyawan wajib diisi");return;}
+  var newId=EMPLOYEES.length+1;
+  EMPLOYEES.push({
+    id:newId,nama:nama,nrp:document.getElementById("addNrp").value||("NRP-"+(1000+newId)),
+    unit:document.getElementById("addUnit").value,area:document.getElementById("addArea").value,
+    jabatan:document.getElementById("addJab").value,grade:"Grade 1",gender:"L",status:"aktif",
+    jenis:document.getElementById("addJenis").value,tglMasuk:document.getElementById("addMasuk").value,
+    tglLahir:"1990-01-01",phone:"081234567890",email:nama.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",
+    alamat:"-",gaji:parseInt(document.getElementById("addGaji").value)||3000000,statusKawin:"Lajang",anak:0,
+    pendidikan:"S1",jurusan:"-",bpjs:"BPJS-"+(20000+newId),npwp:"NPWP-"+(30000+newId),bank:"BCA"
+  });
+  closeModal();
+  filterEmployees();
+  alert("Karyawan baru berhasil ditambahkan: "+nama);
+}
+
+function showEditEmpForm(id){
+  var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
+  if(!e)return;
+  var h='<div class="form-row"><div class="form-group"><label>Nama Lengkap</label><input class="input" id="editNama" value="'+e.nama+'"></div><div class="form-group"><label>NRP</label><input class="input" id="editNrp" value="'+e.nrp+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Unit Kerja</label><select id="editUnit" class="input">';
+  UNITS.forEach(function(u){h+='<option value="'+u+'"'+(u===e.unit?" selected":"")+'>'+u+'</option>';});
+  h+='</select></div><div class="form-group"><label>Area Kerja</label><select id="editArea" class="input">';
+  AREAS.forEach(function(a){h+='<option value="'+a+'"'+(a===e.area?" selected":"")+'>'+a+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jabatan</label><select id="editJab" class="input">';
+  JABATAN.forEach(function(j){h+='<option value="'+j+'"'+(j===e.jabatan?" selected":"")+'>'+j+'</option>';});
+  h+='</select></div><div class="form-group"><label>Status</label><select id="editStatus" class="input"><option value="aktif"'+(e.status==="aktif"?" selected":"")+'>Aktif</option><option value="nonaktif"'+(e.status==="nonaktif"?" selected":"")+'>Nonaktif</option></select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis Kepegawaian</label><select id="editJenis" class="input"><option value="PKWTT"'+(e.jenis==="PKWTT"?" selected":"")+'>PKWTT</option><option value="PKWT"'+(e.jenis==="PKWT"?" selected":"")+'>PKWT</option></select></div><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="editGaji" value="'+e.gaji+'"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditEmp('+id+')">Simpan Perubahan</button>';
+  openModal("Edit Data Karyawan - "+e.nama,h);
+}
+
+function submitEditEmp(id){
+  var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
+  if(!e)return;
+  e.nama=document.getElementById("editNama").value;
+  e.nrp=document.getElementById("editNrp").value;
+  e.unit=document.getElementById("editUnit").value;
+  e.area=document.getElementById("editArea").value;
+  e.jabatan=document.getElementById("editJab").value;
+  e.status=document.getElementById("editStatus").value;
+  e.jenis=document.getElementById("editJenis").value;
+  e.gaji=parseInt(document.getElementById("editGaji").value)||e.gaji;
+  closeModal();
+  filterEmployees();
+  alert("Data karyawan berhasil diperbarui: "+e.nama);
+}
+
+function deleteEmp(id){
+  var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
+  if(!e)return;
+  if(!confirm("Yakin ingin menghapus data karyawan: "+e.nama+"?"))return;
+  EMPLOYEES=EMPLOYEES.filter(function(x){return x.id!==id;});
+  filterEmployees();
+  alert("Karyawan dihapus: "+e.nama);
+}
+
+function simulateImport(){
+  alert("Simulasi Import: Pilih file CSV/Excel untuk import massal data karyawan.\n\nFormat kolom: Nama, NRP, Unit Kerja, Area, Jabatan, Status, Jenis Kepegawaian");
+  // Simulate adding imported data
+  var count=3;
+  for(var i=0;i<count;i++){
+    var newId=EMPLOYEES.length+1;
+    EMPLOYEES.push({
+      id:newId,nama:"Imported Karyawan "+newId,nrp:"NRP-"+(1000+newId),unit:rand(UNITS),area:rand(AREAS),
+      jabatan:rand(JABATAN),grade:"Grade 1",gender:"L",status:"aktif",jenis:"PKWT",tglMasuk:"2026-07-01",
+      tglLahir:"1990-01-01",phone:"081234567890",email:"imported"+newId+"@hasnurcentre.org",
+      alamat:"-",gaji:3000000,statusKawin:"Lajang",anak:0,pendidikan:"S1",jurusan:"-",
+      bpjs:"BPJS-"+(20000+newId),npwp:"NPWP-"+(30000+newId),bank:"BCA"
+    });
+  }
+  filterEmployees();
+  alert("Import berhasil! "+count+" karyawan baru ditambahkan dari file.");
+}
+
+function simulateExport(){
+  alert("Simulasi Export: Data "+EMPLOYEES.length+" karyawan akan diekspor ke format Excel/CSV.\n\nFile: DataKaryawan_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+
+function simulateDownload(name){alert("Mengunduh: "+name+"...");}
+
+function showUploadForm(folder){
+  var folderName=folder||"";
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Kategori / Folder</label><select id="uploadFolder" class="input">';
+  var cats=["SK Pengangkatan","SK Mutasi","SK Promosi","PKWT","Ijazah","Sertifikat","KTP","KK","NPWP","BPJS TK","BPJS Kesehatan"];
+  cats.forEach(function(c){h+='<option value="'+c+'"'+(c===folderName?" selected":"")+'>'+c+'</option>';});
+  h+='</select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Nama Karyawan</label><input class="input" id="uploadEmp" placeholder="Nama karyawan" value="'+(currentRole==="employee"?ROLE_USERS[currentRole].name:"")+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Pilih File</label><div style="border:2px dashed var(--gray-300);border-radius:8px;padding:24px;text-align:center;cursor:pointer" onclick="document.getElementById(\'uploadFile\').click()"><div id="uploadFileName">'+svgIcon("download")+'<br>Klik untuk pilih file (PDF, JPG, PNG)</div><input type="file" id="uploadFile" style="display:none" onchange="document.getElementById(\'uploadFileName\').innerHTML=\'File: \'+this.files[0].name"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitUpload()">Upload</button>';
+  openModal("Upload Dokumen",h);
+}
+
+function submitUpload(){
+  var folder=document.getElementById("uploadFolder").value;
+  var emp=document.getElementById("uploadEmp").value||"Umum";
+  var file=document.getElementById("uploadFile");
+  var fileName=file&&file.files[0]?file.files[0].name:"dokumen_dummy.pdf";
+  closeModal();
+  alert("File berhasil diupload!\n\nFolder: "+folder+"\nKaryawan: "+emp+"\nFile: "+fileName);
+}
+
+// C. Manajemen Hak Akses
+RENDERERS.hakakses=function(c){
+  var roles=[
+    {role:"Super Admin",desc:"Akses penuh seluruh modul",users:2,perms:"Semua modul"},
+    {role:"Tim HC",desc:"Manajemen data karyawan & operasional HC",users:5,perms:"18 modul"},
+    {role:"PIC Unit Kerja",desc:"Akses data unit kerja terkait",users:12,perms:"8 modul (terbatas)"},
+    {role:"Employee (ESS)",desc:"Akses data pribadi & pengajuan",users:180,perms:"ESS, Training, Kebijakan"}
+  ];
+  var h='<div class="page-title">Manajemen Hak Akses</div><div class="page-desc">Konfigurasi PIC Unit Kerja & Tim HC serta hak akses per role</div>';
+  h+='<div class="grid-4">';
+  roles.forEach(function(r){
+    h+='<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="kpi-icon" style="background:var(--blue-bg);color:var(--navy-600)">'+svgIcon("shield")+'</div><div><div style="font-weight:600;color:var(--navy-800)">'+r.role+'</div><div style="font-size:11px;color:#9aa1b1">'+r.perms+'</div></div></div><p style="font-size:12px;color:#6b7280;margin-bottom:8px">'+r.desc+'</p><div style="display:flex;align-items:center;justify-content:space-between"><span class="badge badge-blue">'+r.users+' user</span><button class="btn btn-secondary btn-sm" onclick="alert(\'Edit hak akses: '+r.role+'\')">Edit</button></div></div>';
+  });
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Daftar PIC Unit Kerja</div><button class="btn btn-primary btn-sm" onclick="alert(\'Form tambah PIC Unit Kerja\')">+ Tambah PIC</button></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>Unit Kerja</th><th>Area</th><th>Modul Diakses</th><th>Aksi</th></tr></thead><tbody>';
+  UNITS.forEach(function(u,i){
+    h+='<tr><td><span class="avatar-sm">'+initials(NAMES[i])+'</span>'+NAMES[i]+'</td><td>'+u+'</td><td>'+AREAS[i]+'</td><td><span class="badge badge-blue">8 modul</span></td><td><button class="btn btn-secondary btn-sm" onclick="alert(\'Edit akses: '+NAMES[i]+'\')">Edit</button></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  c.innerHTML=h;
+};
+
+// D. Dashboard Manpower
+RENDERERS.manpower=function(c){
+  var h='<div class="page-title">Dashboard Manpower</div><div class="page-desc">Breakdown distribusi karyawan berdasarkan berbagai dimensi</div>';
+  h+='<div class="grid-2">';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Per Unit Kerja</div></div>'+barChartSVG(UNITS.map(function(u){return {label:u,val:EMPLOYEES.filter(function(e){return e.unit===u;}).length};}))+'</div>';
+  var male=EMPLOYEES.filter(function(e){return e.gender==="L";}).length;
+  h+='<div class="card"><div class="card-header"><div class="card-title">Per Gender</div></div>'+donutSVG([{label:"Laki-laki",val:male,color:"#23488f"},{label:"Perempuan",val:EMPLOYEES.length-male,color:"#7ba0d8"}])+'</div>';
+  h+='</div>';
+  h+='<div class="grid-2">';
+  // Stacked bar per jenis kepegawaian per unit
+  h+='<div class="card"><div class="card-header"><div class="card-title">PKWT vs PKWTT per Unit (Stacked)</div></div>'+stackedBarSVG()+'</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Per Grade</div></div>'+barChartSVG(GRADES.map(function(g){return {label:g,val:EMPLOYEES.filter(function(e){return e.grade===g;}).length};}))+'</div>';
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Per Area Kerja</div></div>'+barChartSVG(AREAS.map(function(a){return {label:a,val:EMPLOYEES.filter(function(e){return e.area===a;}).length};}))+'</div>';
+  c.innerHTML=h;
+};
+
+function stackedBarSVG(){
+  var w=480,h=200,pad=30,bw=40;
+  var data=UNITS.map(function(u){
+    var pkwt=EMPLOYEES.filter(function(e){return e.unit===u&&e.jenis==="PKWT";}).length;
+    var pkwtt=EMPLOYEES.filter(function(e){return e.unit===u&&e.jenis==="PKWTT";}).length;
+    return {label:u,pkwt:pkwt,pkwtt:pkwtt,total:pkwt+pkwtt};
+  });
+  var max=Math.max.apply(null,data.map(function(d){return d.total;}))||1;
+  var gap=(w-pad*2-bw*data.length)/(data.length-1);
+  var h2='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:200px">';
+  for(var i=0;i<=4;i++){
+    var y=h-pad-(h-pad*2)*i/4;
+    h2+='<line x1="'+pad+'" y1="'+y+'" x2="'+(w-pad)+'" y2="'+y+'" stroke="#eef0f4"/>';
+    h2+='<text x="'+(pad-4)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="#9aa1b1">'+Math.round(max*i/4)+'</text>';
+  }
+  data.forEach(function(d,i){
+    var x=pad+i*(bw+gap);
+    var bh1=(h-pad*2)*(d.pkwtt/max);
+    var bh2=(h-pad*2)*(d.pkwt/max);
+    h2+='<rect x="'+x+'" y="'+(h-pad-bh1)+'" width="'+bw+'" height="'+bh1+'" rx="3" fill="#2d5aa8"/>';
+    h2+='<rect x="'+x+'" y="'+(h-pad-bh1-bh2)+'" width="'+bw+'" height="'+bh2+'" fill="#7ba0d8"/>';
+    h2+='<text x="'+(x+bw/2)+'" y="'+(h-10)+'" text-anchor="middle" font-size="8" fill="#6b7280">'+d.label.substring(0,6)+'</text>';
+  });
+  h2+='<rect x="'+(w-100)+'" y="10" width="10" height="10" fill="#2d5aa8"/><text x="'+(w-85)+'" y="19" font-size="10" fill="#374151">PKWTT</text>';
+  h2+='<rect x="'+(w-50)+'" y="10" width="10" height="10" fill="#7ba0d8"/><text x="'+(w-35)+'" y="19" font-size="10" fill="#374151">PKWT</text>';
+  h2+='</svg>';
+  return h2;
+}
+
+// E. Dashboard Turnover
+RENDERERS.turnover=function(c){
+  var months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  var tData=[2.1,2.8,3.1,2.5,3.0,3.2,2.9,3.5,2.7,2.3,2.6,3.2];
+  var h='<div class="page-title">Dashboard Turnover</div><div class="page-desc">Analisis pergerakan karyawan keluar-masuk organisasi</div>';
+  h+='<div class="kpi-grid">';
+  h+=kpiCard("trending","3.2%","Turnover Rate","Bulan ini","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("users","5","Karyawan Masuk","Bulan ini","var(--green)","var(--green-bg)","up");
+  h+=kpiCard("alert","3","Resign","Bulan ini","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("clock","1","Pensiun","Bulan ini","var(--yellow)","var(--yellow-bg)");
+  h+='</div>';
+  h+='<div class="grid-2">';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Tren Turnover 12 Bulan</div></div>'+lineChartSVG(tData,months)+'</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Alasan Resign</div></div>'+donutSVG([{label:"Gaji",val:8,color:"#dc2626"},{label:"Jenjang Karir",val:6,color:"#ca8a04"},{label:"Relokasi",val:4,color:"#2563eb"},{label:"Lainnya",val:3,color:"#9aa1b1"}])+'</div>';
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Breakdown Turnover per Unit Kerja</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Unit Kerja</th><th>Total Karyawan</th><th>Resign YTD</th><th>Turnover Rate</th></tr></thead><tbody>';
+  UNITS.forEach(function(u){
+    var tot=EMPLOYEES.filter(function(e){return e.unit===u;}).length;
+    var res=Math.floor(Math.random()*3)+1;
+    var rate=(res/tot*100).toFixed(1);
+    h+='<tr><td>'+u+'</td><td>'+tot+'</td><td>'+res+'</td><td><span class="badge '+(rate>10?"badge-red":"badge-green")+'">'+rate+'%</span></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  c.innerHTML=h;
+};
+
+// F. Dashboard Kontrak & Masa Kerja
+RENDERERS.kontrak=function(c){
+  var pkwt=CONTRACTS.filter(function(x){return x.jenis==="PKWT";}).length;
+  var pkwtt=CONTRACTS.filter(function(x){return x.jenis==="PKWTT";}).length;
+  var h='<div class="page-title">Dashboard Kontrak & Masa Kerja</div><div class="page-desc">Monitoring masa kontrak dan kepegawaian karyawan</div>';
+  h+='<div class="grid-2">';
+  h+=kpiCard("file-text",pkwt,"Total PKWT","Kontrak berjangka","var(--yellow)","var(--yellow-bg)");
+  h+=kpiCard("file-text",pkwtt,"Total PKWTT","Karyawan tetap","var(--green)","var(--green-bg)");
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kontrak</div>'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export data kontrak ke Excel...\')">Export</button>':'')+'</div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>Jenis</th><th>Tgl Kontrak</th><th>Tgl Berakhir</th><th>Kontrak Ke-</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+  CONTRACTS.forEach(function(k){
+    var badge=k.status==="aktif"?'<span class="badge badge-green">Aktif</span>':k.status==="mendekati berakhir"?'<span class="badge badge-yellow">Mendekati Berakhir</span>':'<span class="badge badge-red">Expired</span>';
+    h+='<tr><td><span class="avatar-sm">'+initials(k.emp.nama)+'</span>'+k.emp.nama+'</td><td>'+(k.jenis==="PKWT"?'<span class="badge badge-yellow">PKWT</span>':'<span class="badge badge-blue">PKWTT</span>')+'</td><td>'+k.tglKontrak+'</td><td>'+k.tglBerakhir+'</td><td>Ke-'+k.kontrakKe+'</td><td>'+badge+'</td><td><button class="btn btn-secondary btn-sm" onclick="alert(\'Detail kontrak: '+k.emp.nama+'\')">Detail</button></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  c.innerHTML=h;
+};
+
+// G. Dashboard Cuti & Absensi
+RENDERERS.cuti=function(c){
+  var h='<div class="page-title">Dashboard Cuti & Absensi</div><div class="page-desc">Ringkasan cuti dan kehadiran karyawan</div>';
+  h+='<div class="kpi-grid">';
+  h+=kpiCard("calendar","8.5","Sisa Cuti Rata-rata","Hari","var(--navy-600)","var(--blue-bg)");
+  h+=kpiCard("calendar","3.5","Cuti Terpakai","Rata-rata/tahun","var(--yellow)","var(--yellow-bg)");
+  h+=kpiCard("users","2","Cuti Melahirkan Aktif","Karyawan","var(--green)","var(--green-bg)");
+  h+=kpiCard("alert","4","Pengajuan Cuti Pending","Menunggu approval","var(--red)","var(--red-bg)");
+  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Kehadiran Karyawan</div>'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export rekap kehadiran ke Excel...\')">Export</button>':'')+'</div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Hadir</th><th>Terlambat</th><th>Tidak Hadir</th><th>Izin</th><th>Sisa Cuti</th></tr></thead><tbody>';
+  ATTENDANCE.forEach(function(a){
+    var tidakHadir=a.izin+a.sakit+a.alpa;
+    var sisa=12-Math.floor(Math.random()*5);
+    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+' hari</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+(tidakHadir>0?'<span class="badge badge-red">'+tidakHadir+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+a.izin+'</td><td>'+sisa+' hari</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  c.innerHTML=h;
+};
+
+// H. Absensi & Tunjangan Kehadiran
+RENDERERS.absensi=function(c){
+  var h='<div class="page-title">Absensi & Tunjangan Kehadiran</div><div class="page-desc">Monitoring kehadiran detail dan perhitungan tunjangan otomatis</div>';
+  // Toggle
+  h+='<div class="tabs"><div class="tab active" onclick="switchAbsensiTab(this,\'harian\')">Harian</div><div class="tab" onclick="switchAbsensiTab(this,\'mingguan\')">Mingguan</div><div class="tab" onclick="switchAbsensiTab(this,\'bulanan\')">Bulanan</div></div>';
+  // Gauge + leaderboard
+  h+='<div class="grid-2">';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Tingkat Kehadiran Organisasi</div></div>'+gaugeSVG(94)+'</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Top 10 Unit Kerja Kehadiran Terbaik</div></div>';
+  var lb=UNITS.map(function(u,i){return {name:u,val:88+Math.floor(Math.random()*10)};}).sort(function(a,b){return b.val-a.val;});
+  lb.forEach(function(l,i){
+    h+='<div class="leaderboard-item"><div class="lb-rank">'+(i+1)+'</div><div class="lb-info"><div class="lb-name">'+l.name+'</div><div class="lb-val">'+l.val+'% kehadiran</div></div><div class="lb-bar"><div class="lb-bar-fill" style="width:'+l.val+'%"></div></div></div>';
+  });
+  h+='</div></div>';
+  // Monitoring table
+  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kehadiran <span id="absPeriodLabel" style="font-weight:400;color:#9aa1b1;font-size:12px">(Harian)</span></div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Masuk</th><th>Terlambat</th><th>Pulang Cepat</th><th>Izin</th><th>Dinas Luar</th><th>Cuti</th><th>Sakit</th><th>Alpa</th><th>WFH</th></tr></thead><tbody id="absTbody"></tbody></table></div>';
+  h+='</div>';
+  // Perhitungan otomatis
+  h+='<div class="card"><div class="card-header"><div class="card-title">Perhitungan Otomatis Tunjangan Kehadiran</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>Hadir</th><th>Uang Transport</th><th>Uang Makan</th><th>Potongan Terlambat</th><th>Potongan Absen</th><th>Total</th></tr></thead><tbody id="calcTbody"></tbody></table></div></div>';
+  // Bar chart biaya
+  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Biaya Transport & Makan per Bulan</div></div>';
+  var months=["Jan","Feb","Mar","Apr","Mei","Jun"];
+  h+=barChartSVG(months.map(function(m){return {label:m,val:15+Math.floor(Math.random()*8)};}));
+  h+='</div>';
+  c.innerHTML=h;
+  renderAbsensiTable("harian");
+  renderCalcTable();
+};
+
+function switchAbsensiTab(el,period){
+  el.parentNode.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  el.classList.add("active");
+  document.getElementById("absPeriodLabel").textContent="("+(period==="harian"?"Harian":period==="mingguan"?"Mingguan":"Bulanan")+")";
+  renderAbsensiTable(period);
+}
+
+function renderAbsensiTable(period){
+  var mult=period==="harian"?1:period==="mingguan"?5:22;
+  var h='';
+  ATTENDANCE.forEach(function(a){
+    var masuk=period==="harian"?(Math.random()>.1?"08:0"+Math.floor(Math.random()*9):"Terlambat"):(a.hadir*mult/22).toFixed(0)+" hari";
+    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+masuk+'</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.izin+'</td><td>'+(Math.random()>.7?'1':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.sakit+'</td><td>'+(a.alpa>0?'<span class="badge badge-red">'+a.alpa+'</span>':'-')+'</td><td>'+(a.wfh>0?a.wfh:'-')+'</td></tr>';
+  });
+  var tb=document.getElementById("absTbody");
+  if(tb)tb.innerHTML=h;
+}
+
+function renderCalcTable(){
+  var h='';
+  ATTENDANCE.forEach(function(a){
+    var transport=a.hadir*25000;
+    var makan=a.hadir*30000;
+    var potTerlambat=a.terlambat*15000;
+    var potAbsen=a.alpa*50000;
+    var total=transport+makan-potTerlambat-potAbsen;
+    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+'</td><td>Rp '+transport.toLocaleString("id-ID")+'</td><td>Rp '+makan.toLocaleString("id-ID")+'</td><td>Rp '+potTerlambat.toLocaleString("id-ID")+'</td><td>Rp '+potAbsen.toLocaleString("id-ID")+'</td><td><b>Rp '+total.toLocaleString("id-ID")+'</b></td></tr>';
+  });
+  var tb=document.getElementById("calcTbody");
+  if(tb)tb.innerHTML=h;
+}
+
+// I. Digital Document Management
+RENDERERS.dokumen=function(c){
+  var folders=[
+    {name:"SK Pengangkatan",count:45,icon:"file",color:"var(--blue-bg)",fg:"var(--blue)"},
+    {name:"SK Mutasi",count:12,icon:"file",color:"var(--gray-100)",fg:"var(--gray-600)"},
+    {name:"SK Promosi",count:8,icon:"file",color:"var(--green-bg)",fg:"var(--green)"},
+    {name:"SK Demosi",count:3,icon:"file",color:"var(--red-bg)",fg:"var(--red)"},
+    {name:"SK Pensiun",count:5,icon:"file",color:"var(--yellow-bg)",fg:"var(--yellow)"},
+    {name:"PKWT",count:67,icon:"file-text",color:"var(--blue-bg)",fg:"var(--blue)"},
+    {name:"Adendum",count:15,icon:"file-text",color:"var(--gray-100)",fg:"var(--gray-600)"},
+    {name:"Ijazah",count:200,icon:"award",color:"var(--green-bg)",fg:"var(--green)"},
+    {name:"Sertifikat",count:120,icon:"award",color:"var(--blue-bg)",fg:"var(--blue)"},
+    {name:"KTP",count:200,icon:"user",color:"var(--gray-100)",fg:"var(--gray-600)"},
+    {name:"Kartu Keluarga",count:200,icon:"users",color:"var(--gray-100)",fg:"var(--gray-600)"},
+    {name:"NPWP",count:180,icon:"file",color:"var(--gray-100)",fg:"var(--gray-600)"},
+    {name:"BPJS TK",count:200,icon:"shield",color:"var(--green-bg)",fg:"var(--green)"},
+    {name:"BPJS Kesehatan",count:200,icon:"shield",color:"var(--blue-bg)",fg:"var(--blue)"}
+  ];
+  var h='<div class="page-title">Digital Document Management</div><div class="page-desc">Pengelolaan dokumen kepegawaian digital terpusat</div>';
+  h+='<div class="card"><div class="form-row"><div class="form-group"><label>Cari Dokumen</label><input class="input" id="docSearch" placeholder="Nama dokumen / karyawan..." oninput="filterDocs()"></div><div class="form-group"><label>Kategori</label><select id="docCat" onchange="filterDocs()"><option value="">Semua Kategori</option>';
+  folders.forEach(function(f){h+='<option value="'+f.name+'">'+f.name+'</option>';});
+  h+='</select></div>';
+  if(can("upload"))h+='<div class="form-group" style="flex:0 0 auto"><label>&nbsp;</label><button class="btn btn-primary" onclick="showUploadForm()">'+svgIcon("download")+' Upload Dokumen</button></div>';
+  h+='</div></div>';
+  h+='<div class="folder-grid" id="folderGrid">';
+  folders.forEach(function(f){
+    h+='<div class="folder-card" onclick="openDocFolder(\''+f.name+'\')"><div class="folder-icon" style="background:'+f.color+';color:'+f.fg+'">'+svgIcon(f.icon)+'</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+f.count+' dokumen</div></div>';
+  });
+  h+='</div>';
+  c.innerHTML=h;
+  window._DOC_FOLDERS=folders;
+};
+
+function filterDocs(){
+  var s=document.getElementById("docSearch").value.toLowerCase();
+  var cat=document.getElementById("docCat").value;
+  var grid=document.getElementById("folderGrid");
+  var h='';
+  window._DOC_FOLDERS.forEach(function(f){
+    if(s&&f.name.toLowerCase().indexOf(s)===-1)return;
+    if(cat&&f.name!==cat)return;
+    h+='<div class="folder-card" onclick="openDocFolder(\''+f.name+'\')"><div class="folder-icon" style="background:'+f.color+';color:'+f.fg+'">'+svgIcon(f.icon)+'</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+f.count+' dokumen</div></div>';
+  });
+  if(!h)h='<p style="grid-column:1/-1;text-align:center;color:#9aa1b1;padding:24px">Tidak ada dokumen ditemukan</p>';
+  grid.innerHTML=h;
+}
+
+function openDocFolder(name){
+  var docs=["Dokumen_"+name+"_001.pdf","Dokumen_"+name+"_002.pdf","Dokumen_"+name+"_003.pdf"];
+  var h='<p style="margin-bottom:12px;color:#6b7280">Daftar dokumen di folder <b>'+name+'</b>:</p>';
+  docs.forEach(function(d){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eef0f4"><span style="display:flex;align-items:center;gap:8px">'+svgIcon("file")+' '+d+'</span><div><button class="btn btn-secondary btn-sm" onclick="simulateDownload(\''+d+'\')">Download</button> <button class="btn btn-secondary btn-sm" onclick="alert(\'Pratinjau: '+d+'\')">Lihat</button></div></div>';
+  });
+  h+='<div style="margin-top:16px">';
+  if(can("upload"))h+='<button class="btn btn-primary btn-sm" onclick="showUploadForm(\''+name+'\')">+ Upload Dokumen</button>';
+  h+='</div>';
+  openModal("Folder: "+name,h);
+}
+
+// J. Perhitungan Pensiun & Pesangon
+RENDERERS.pensiun=function(c){
+  var h='<div class="page-title">Perhitungan Pensiun & Pesangon</div><div class="page-desc">Simulasi perhitungan estimasi pensiun dan pesangon karyawan</div>';
+  h+='<div class="grid-2">';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Form Simulasi</div></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Nama Karyawan</label><input class="input" id="simNama" placeholder="Nama karyawan" value="Ahmad Fauzi"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tanggal Masuk Kerja</label><input class="input" type="date" id="simMasuk" value="2015-03-01"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tanggal Perhitungan</label><input class="input" type="date" id="simNow" value="2026-07-01"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="simGaji" value="5000000"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tunjangan Tetap (Rp)</label><input class="input" type="number" id="simTunjangan" value="1500000"></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="hitungPensiun()">Hitung Estimasi</button>';
+  h+='</div>';
+  h+='<div class="card" id="pensiunResult"><div class="card-header"><div class="card-title">Hasil Perhitungan</div></div><p style="color:#9aa1b1;text-align:center;padding:40px 0">Klik "Hitung Estimasi" untuk melihat hasil kalkulasi</p></div>';
+  h+='</div>';
+  c.innerHTML=h;
+};
+
+function hitungPensiun(){
+  var nama=document.getElementById("simNama").value;
+  var masuk=new Date(document.getElementById("simMasuk").value);
+  var now=new Date(document.getElementById("simNow").value);
+  var gaji=parseInt(document.getElementById("simGaji").value)||0;
+  var tunj=parseInt(document.getElementById("simTunjangan").value)||0;
+  var years=(now-masuk)/(365.25*24*3600*1000);
+  var masaKerja=Math.floor(years);
+  var usiaPensiun=60;
+  var sisaTahun=usiaPensiun-35;
+  // Estimasi
+  var upah=gaji+tunj;
+  var pensiun=Math.round(upah*masaKerja*0.02*12);
+  var pesangon=Math.round(upah* (masaKerja>=8?8:masaKerja));
+  var pmk=Math.round(gaji*masaKerja*0.5);
+  var uph=Math.round(upah* (masaKerja>=1?1:0)+tunj*masaKerja);
+  var h='<div class="card-header"><div class="card-title">Hasil Perhitungan - '+nama+'</div></div>';
+  h+='<div class="detail-grid" style="margin-top:12px">';
+  h+=dl("Masa Kerja",masaKerja+" tahun");
+  h+=dl("Estimasi Usia Pensiun","60 tahun");
+  h+=dl("Sisa Waktu Kerja",Math.max(0,60-35-masaKerja)+" tahun");
+  h+=dl("Upah Dasar","Rp "+upah.toLocaleString("id-ID"));
+  h+='</div>';
+  h+='<hr style="border:none;border-top:1px solid #eef0f4;margin:16px 0">';
+  h+='<div style="display:flex;flex-direction:column;gap:10px">';
+  h+='<div style="display:flex;justify-content:space-between;padding:10px;background:var(--green-bg);border-radius:6px"><span>Estimasi Pensiun</span><b style="color:var(--green)">Rp '+pensiun.toLocaleString("id-ID")+'</b></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:10px;background:var(--blue-bg);border-radius:6px"><span>Estimasi Pesangon</span><b style="color:var(--blue)">Rp '+pesangon.toLocaleString("id-ID")+'</b></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:10px;background:var(--yellow-bg);border-radius:6px"><span>Penghargaan Masa Kerja</span><b style="color:var(--yellow)">Rp '+pmk.toLocaleString("id-ID")+'</b></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:10px;background:var(--gray-100);border-radius:6px"><span>Uang Penggantian Hak</span><b>Rp '+uph.toLocaleString("id-ID")+'</b></div>';
+  h+='<div style="display:flex;justify-content:space-between;padding:12px;background:var(--navy-600);color:#fff;border-radius:6px;margin-top:4px"><span style="font-weight:600">Total Estimasi</span><b style="font-size:16px">Rp '+(pensiun+pesangon+pmk+uph).toLocaleString("id-ID")+'</b></div>';
+  h+='</div>';
+  h+='<p style="font-size:11px;color:#9aa1b1;margin-top:12px">* Hasil simulasi bersifat estimasi. Perhitungan resmi mengacu pada UU Ketenagakerjaan dan kebijakan internal yayasan.</p>';
+  document.getElementById("pensiunResult").innerHTML=h;
+}
+
+// K. Penilaian Kinerja
+RENDERERS.kinerja=function(c){
+  var h='<div class="page-title">Penilaian Kinerja</div><div class="page-desc">Target kerja tahunan dan penilaian karyawan</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Target Kerja Tahunan 2026</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Target</th><th>Progress</th><th>Penilaian Atasan</th><th>Penilaian Akhir</th></tr></thead><tbody>';
+  EMPLOYEES.slice(0,8).forEach(function(e){
+    var prog=Math.floor(40+Math.random()*55);
+    var atasan=Math.floor(60+Math.random()*35);
+    var akhir=Math.floor(55+Math.random()*40);
+    h+='<tr><td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td><td>'+rand(["Peningkatan layanan","Efisiensi proses","Pengembangan program"])+'</td><td><div class="progress"><div class="progress-bar" style="width:'+prog+'%;background:'+(prog>80?"var(--green)":prog>50?"var(--yellow)":"var(--red)")+'"></div></div><span style="font-size:11px">'+prog+'%</span></td><td>'+atasan+'/100</td><td><b>'+akhir+'/100</b></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  // Nine-box talent mapping
+  h+='<div class="card"><div class="card-header"><div class="card-title">Talent Mapping (Nine-Box)</div></div>';
+  h+='<div class="nine-box">';
+  h+='<div></div><div class="nine-axis-x" style="grid-column:2/5">Performance &rarr;</div>';
+  h+='<div class="nine-axis-y">Potential &uarr;</div>';
+  var labels=[["Low Perf/High Pot","Mid Perf/High Pot","High Perf/High Pot"],["Low Perf/Mid Pot","Mid Perf/Mid Pot","High Perf/Mid Pot"],["Low Perf/Low Pot","Mid Perf/Low Pot","High Perf/Low Pot"]];
+  var cls=[["med","med","high"],["med","med","high"],["low","low","med"]];
+  for(var r=0;r<3;r++){
+    for(var col=0;col<3;col++){
+      var cellEmps=EMPLOYEES.slice(r*3+col,r*3+col+3);
+      h+='<div class="nine-cell '+cls[r][col]+'"><div class="nine-cell-label">'+labels[r][col]+'</div>';
+      cellEmps.forEach(function(e){
+        h+='<div class="nine-avatar" style="background:'+rand(["#23488f","#16a34a","#ca8a04","#dc2626"])+'" title="'+e.nama+'" onclick="showEmpDetail('+e.id+')">'+initials(e.nama)+'</div>';
+      });
+      h+='</div>';
+    }
+  }
+  h+='</div></div>';
+  c.innerHTML=h;
+};
+
+// L. Talent Pool & Succession Planning
+RENDERERS.talent=function(c){
+  var h='<div class="page-title">Talent Pool & Succession Planning</div><div class="page-desc">Identifikasi talenta dan perencanaan suksesi posisi kunci</div>';
+  // Nine-box
+  h+='<div class="card"><div class="card-header"><div class="card-title">Nine-Box Matrix</div></div>';
+  h+='<div class="nine-box">';
+  h+='<div></div><div class="nine-axis-x" style="grid-column:2/5">Performance &rarr;</div>';
+  h+='<div class="nine-axis-y">Potential &uarr;</div>';
+  var labels=[["Future Stars","Future Stars","Stars"],["Enigma","Core Players","High Performers"],["Dilemma","Effective","Trusted Professionals"]];
+  var cls=[["high","high","high"],["med","med","high"],["low","med","med"]];
+  for(var r=0;r<3;r++){
+    for(var col=0;col<3;col++){
+      var cellEmps=EMPLOYEES.slice(r*2+col*2,r*2+col*2+2);
+      h+='<div class="nine-cell '+cls[r][col]+'"><div class="nine-cell-label">'+labels[r][col]+'</div>';
+      cellEmps.forEach(function(e){
+        h+='<div class="nine-avatar" style="background:'+rand(["#23488f","#16a34a","#ca8a04"])+'" title="'+e.nama+'" onclick="showEmpDetail('+e.id+')">'+initials(e.nama)+'</div>';
+      });
+      h+='</div>';
+    }
+  }
+  h+='</div></div>';
+  // Succession cards
+  h+='<div class="card"><div class="card-header"><div class="card-title">Succession Plan per Posisi Kunci</div></div>';
+  var positions=["Direktur Eksekutif","Kepala Unit Pendidikan","Kepala Unit Kesehatan","Kepala Unit Sosial"];
+  positions.forEach(function(p,i){
+    var inc=EMPLOYEES[i];
+    var c1=EMPLOYEES[i+4];
+    var c2=EMPLOYEES[i+8];
+    var ready1=rand(["Ready Now","1-2 Tahun","3-5 Tahun"]);
+    var ready2=rand(["1-2 Tahun","3-5 Tahun","3-5 Tahun"]);
+    h+='<div style="border:1px solid #eef0f4;border-radius:8px;padding:14px;margin-bottom:12px">';
+    h+='<div style="font-weight:600;color:var(--navy-800);margin-bottom:10px">'+p+'</div>';
+    h+='<div style="display:flex;gap:16px;flex-wrap:wrap">';
+    h+='<div style="flex:1;min-width:140px"><div style="font-size:11px;color:#9aa1b1;margin-bottom:4px">Incumbent</div><div style="display:flex;align-items:center;gap:8px"><span class="avatar-sm">'+initials(inc.nama)+'</span>'+inc.nama+'</div></div>';
+    h+='<div style="flex:1;min-width:140px"><div style="font-size:11px;color:#9aa1b1;margin-bottom:4px">Kandidat 1</div><div style="display:flex;align-items:center;gap:8px"><span class="avatar-sm">'+initials(c1.nama)+'</span>'+c1.nama+'</div><span class="badge '+(ready1==="Ready Now"?"badge-green":ready1==="1-2 Tahun"?"badge-yellow":"badge-gray")+'" style="margin-top:4px">'+ready1+'</span></div>';
+    h+='<div style="flex:1;min-width:140px"><div style="font-size:11px;color:#9aa1b1;margin-bottom:4px">Kandidat 2</div><div style="display:flex;align-items:center;gap:8px"><span class="avatar-sm">'+initials(c2.nama)+'</span>'+c2.nama+'</div><span class="badge '+(ready2==="Ready Now"?"badge-green":ready2==="1-2 Tahun"?"badge-yellow":"badge-gray")+'" style="margin-top:4px">'+ready2+'</span></div>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+  c.innerHTML=h;
+};
+
+// M. Training & Development
+RENDERERS.training=function(c){
+  var h='<div class="page-title">Training & Development</div><div class="page-desc">Riwayat pelatihan, sertifikasi, dan pengembangan kompetensi</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Riwayat Pelatihan & Sertifikasi</div><div style="display:flex;gap:6px">';
+  if(can("create"))h+='<button class="btn btn-primary btn-sm" onclick="showAddTrainingForm()">+ Tambah Pelatihan</button>';
+  if(can("export"))h+='<button class="btn btn-secondary btn-sm" onclick="alert(\'Export data pelatihan ke Excel...\')">Export</button>';
+  h+='</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Nama Pelatihan</th><th>Jenis</th><th>Tanggal</th><th>Status</th><th>Sertifikat</th>'+(can("update")||can("delete")?'<th>Aksi</th>':'')+'</tr></thead><tbody>';
+  var trainings=["Leadership Program","MS Office Advanced","Public Speaking","Manajemen Proyek","First Aid Training","Digital Marketing"];
+  EMPLOYEES.slice(0,10).forEach(function(e,i){
+    var t=trainings[i%trainings.length];
+    var jenis=rand(["Pelatihan","Sertifikasi","Tugas Belajar","Beasiswa"]);
+    var st=rand(["Selesai","Berlangsung","Terjadwal"]);
+    var badge=st==="Selesai"?"badge-green":st==="Berlangsung"?"badge-yellow":"badge-blue";
+    var aksi='';
+    if(can("update"))aksi+='<button class="btn btn-secondary btn-sm" onclick="alert(\'Edit pelatihan: '+t+'\')">Edit</button> ';
+    if(can("delete"))aksi+='<button class="btn btn-danger btn-sm" onclick="alert(\'Hapus pelatihan: '+t+'\')">Hapus</button>';
+    h+='<tr><td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td><td>'+t+'</td><td>'+jenis+'</td><td>2026-0'+(1+Math.floor(Math.random()*6))+'-15</td><td><span class="badge '+badge+'">'+st+'</span></td><td>'+(st==="Selesai"?'<button class="btn btn-secondary btn-sm" onclick="simulateDownload(\'Sertifikat - '+t+'\')">Download</button>':'-')+'</td>'+(aksi?'<td>'+aksi+'</td>':'')+'</tr>';
+  });
+  h+='</tbody></table></div></div>';
+  // Radar chart
+  h+='<div class="card"><div class="card-header"><div class="card-title">Kompetensi Karyawan - '+EMPLOYEES[0].nama+'</div></div>';
+  h+='<div style="display:flex;justify-content:center">'+radarSVG(["Leadership","Teknis","Komunikasi","Problem Solving","Manajemen","Kolaborasi"],[75,82,68,72,65,80])+'</div>';
+  h+='</div>';
+  c.innerHTML=h;
+};
+
+// N. Workflow Persetujuan Digital
+RENDERERS.workflow=function(c){
+  var h='<div class="page-title">Workflow Persetujuan Digital</div><div class="page-desc">Daftar pengajuan dan status persetujuan digital</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Daftar Pengajuan</div><div style="display:flex;gap:6px">';
+  if(can("create"))h+='<button class="btn btn-primary btn-sm" onclick="showAddWorkflowForm()">+ Buat Pengajuan</button>';
+  if(can("export"))h+='<button class="btn btn-secondary btn-sm" onclick="alert(\'Export data pengajuan ke Excel...\')">Export</button>';
+  h+='</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Jenis</th><th>Nama</th><th>Posisi</th><th>Tanggal</th><th>Approver</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="workflowTbody"></tbody></table></div></div>';
+  c.innerHTML=h;
+  renderWorkflows();
+};
+
+function renderWorkflows(){
+  var h='';
+  WORKFLOWS.forEach(function(w){
+    var badge=w.status==="Approved"?"badge-green":w.status==="Rejected"?"badge-red":"badge-yellow";
+    var aksi='';
+    if(w.status==="Pending"&&can("approve")){
+      aksi='<button class="btn btn-success btn-sm" onclick="approveWorkflow('+w.id+',true)">Approve</button> <button class="btn btn-danger btn-sm" onclick="approveWorkflow('+w.id+',false)">Reject</button>';
+    }else{
+      aksi='<button class="btn btn-secondary btn-sm" onclick="showWorkflowDetail('+w.id+')">Detail</button>';
+    }
+    if(can("delete"))aksi+=' <button class="btn btn-danger btn-sm" onclick="deleteWorkflow('+w.id+')">Hapus</button>';
+    h+='<tr id="wfRow-'+w.id+'"><td><span class="badge badge-blue">'+w.jenis+'</span></td><td>'+w.nama+'</td><td>'+w.pos+'</td><td>'+w.tanggal+'</td><td>'+w.approver+'</td><td><span class="badge '+badge+'" id="wfStatus-'+w.id+'">'+w.status+'</span></td><td id="wfAksi-'+w.id+'">'+aksi+'</td></tr>';
+  });
+  var tb=document.getElementById("workflowTbody");
+  if(tb)tb.innerHTML=h;
+}
+
+function approveWorkflow(id,approve){
+  var w=WORKFLOWS.filter(function(x){return x.id===id;})[0];
+  if(!w)return;
+  w.status=approve?"Approved":"Rejected";
+  var badge=w.status==="Approved"?"badge-green":"badge-red";
+  var statusEl=document.getElementById("wfStatus-"+id);
+  statusEl.className="badge "+badge;
+  statusEl.textContent=w.status;
+  document.getElementById("wfAksi-"+id).innerHTML='<button class="btn btn-secondary btn-sm" onclick="showWorkflowDetail('+id+')">Detail</button>';
+  alert("Pengajuan "+w.jenis+" - "+w.nama+" telah "+(approve?"DISETUJUI":"DITOLAK"));
+}
+function deleteWorkflow(id){
+  var w=WORKFLOWS.filter(function(x){return x.id===id;})[0];
+  if(!w)return;
+  if(!confirm("Yakin hapus pengajuan: "+w.jenis+" - "+w.nama+"?"))return;
+  WORKFLOWS=WORKFLOWS.filter(function(x){return x.id!==id;});
+  renderWorkflows();
+  alert("Pengajuan dihapus");
+}
+
+function showAddWorkflowForm(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Jenis Pengajuan</label><select id="wfJenis" class="input"><option>PKWT</option><option>Pengangkatan</option><option>Mutasi</option><option>Promosi</option><option>Cuti</option><option>Surat Tugas</option><option>Lembur</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Nama Pengaju</label><input class="input" id="wfNama" value="'+ROLE_USERS[currentRole].name+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Posisi / Keterangan</label><input class="input" id="wfPos" placeholder="Posisi/keterangan"></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitAddWorkflow()">Submit Pengajuan</button>';
+  openModal("Buat Pengajuan Baru",h);
+}
+
+function submitAddWorkflow(){
+  var jenis=document.getElementById("wfJenis").value;
+  var nama=document.getElementById("wfNama").value;
+  var pos=document.getElementById("wfPos").value||"-";
+  WORKFLOWS.unshift({id:Date.now(),jenis:jenis,nama:nama,pos:pos,tanggal:"2026-07-01",status:"Pending",approver:"Tim HC"});
+  closeModal();
+  renderWorkflows();
+  alert("Pengajuan "+jenis+" berhasil dibuat. Menunggu approval.");
+}
+function showWorkflowDetail(id){
+  var w=WORKFLOWS.filter(function(x){return x.id===id;})[0];
+  if(!w)return;
+  var h='<div class="detail-grid">'+dl("Jenis Pengajuan",w.jenis)+dl("Nama",w.nama)+dl("Posisi",w.pos)+dl("Tanggal",w.tanggal)+dl("Approver",w.approver)+dl("Status",w.status)+'</div>';
+  h+='<div style="margin-top:16px"><h4 style="font-size:14px;margin-bottom:10px">Timeline Approval</h4>';
+  h+='<div style="border-left:2px solid #eef0f4;padding-left:16px">';
+  h+='<div style="margin-bottom:12px"><div style="font-size:12px;color:#9aa1b1">'+w.tanggal+'</div><div style="font-size:13px">Pengajuan dibuat oleh '+w.nama+'</div></div>';
+  if(w.status!=="Pending"){
+    h+='<div><div style="font-size:12px;color:#9aa1b1">'+w.tanggal+'</div><div style="font-size:13px">'+w.approver+' - <span class="badge '+(w.status==="Approved"?"badge-green":"badge-red")+'">'+w.status+'</span></div></div>';
+  }else{
+    h+='<div><div style="font-size:12px;color:#9aa1b1">Menunggu</div><div style="font-size:13px;color:#ca8a04">'+w.approver+' - Pending</div></div>';
+  }
+  h+='</div></div>';
+  openModal("Detail Pengajuan - "+w.jenis,h);
+}
+
+function showAddTrainingForm(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama Pelatihan</label><input class="input" id="trainName" placeholder="Nama pelatihan"></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis</label><select id="trainJenis" class="input"><option>Pelatihan</option><option>Sertifikasi</option><option>Tugas Belajar</option><option>Beasiswa</option></select></div>';
+  h+='<div class="form-group"><label>Tanggal</label><input class="input" type="date" id="trainDate" value="2026-07-15"></div></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Karyawan</label><select id="trainEmp" class="input">';
+  EMPLOYEES.forEach(function(e){h+='<option value="'+e.id+'">'+e.nama+'</option>';});
+  h+='</select></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="alert(\'Pelatihan berhasil ditambahkan\');closeModal()">Simpan</button>';
+  openModal("Tambah Pelatihan",h);
+}
+
+// O. Organizational Chart
+RENDERERS.orgchart=function(c){
+  var h='<div class="page-title">Organizational Chart</div><div class="page-desc">Struktur organisasi Yayasan Hasnur Centre</div>';
+  h+='<div class="card"><div class="org-tree">';
+  // Level 1
+  h+='<div class="org-node"><div class="org-node-title">Ketua Dewan Pembina</div><div class="org-node-name">H. Hasnur Rizal</div></div>';
+  // Level 2
+  h+='<div class="org-level" style="margin-top:24px;position:relative">';
+  h+='<div style="position:absolute;top:-24px;left:50%;width:1px;height:24px;background:#c4cad6"></div>';
+  h+='<div class="org-node"><div class="org-node-title">Direktur Eksekutif</div><div class="org-node-name">Dr. Ahmad Fauzi</div></div>';
+  h+='</div>';
+  // Level 3
+  h+='<div class="org-level" style="margin-top:24px;position:relative">';
+  h+='<div style="position:absolute;top:-24px;left:50%;width:1px;height:24px;background:#c4cad6"></div>';
+  UNITS.forEach(function(u,i){
+    var vacant=i===5;
+    h+='<div class="org-child-wrap"><div class="org-node'+(vacant?" vacant":"")+'"><div class="org-node-title">Kepala Unit '+u+'</div><div class="org-node-name">'+(vacant?"<span style='color:#ca8a04'>VACANT</span>":NAMES[i])+'</div></div></div>';
+  });
+  h+='</div>';
+  // Level 4 (under first unit)
+  h+='<div class="org-level" style="margin-top:24px;position:relative">';
+  h+='<div style="position:absolute;top:-24px;left:16%;width:1px;height:24px;background:#c4cad6"></div>';
+  h+='<div class="org-child-wrap" style="flex:0 0 auto"><div class="org-node"><div class="org-node-title">Supervisor Pendidikan</div><div class="org-node-name">Siti Nurhaliza</div></div></div>';
+  h+='<div class="org-child-wrap" style="flex:0 0 auto"><div class="org-node vacant"><div class="org-node-title">Koordinator Pengembangan</div><div class="org-node-name"><span style="color:#ca8a04">VACANT</span></div></div></div>';
+  h+='</div>';
+  h+='</div></div>';
+  c.innerHTML=h;
+};
+
+// P. Employee Self Service (ESS)
+RENDERERS.ess=function(c){
+  var h='<div class="page-title">Employee Self Service (ESS)</div><div class="page-desc">Layanan mandiri karyawan - '+ROLE_USERS[currentRole].name+'</div>';
+  var menus=[
+    {label:"Update Data Pribadi",icon:"user",action:"updateDataPribadi()"},
+    {label:"Download Slip Gaji",icon:"download",action:"downloadSlipGaji()"},
+    {label:"Pengajuan Cuti",icon:"calendar",action:"showFormCuti()"},
+    {label:"Lihat SK/Dokumen",icon:"file",action:"lihatDokumenESS()"},
+    {label:"Riwayat Pelatihan & Penilaian",icon:"book",action:"riwayatPelatihanESS()"}
+  ];
+  h+='<div class="grid-3" style="margin-bottom:20px">';
+  menus.forEach(function(m){
+    h+='<div class="card" style="text-align:center;cursor:pointer" onclick="'+m.action+'"><div class="kpi-icon" style="background:var(--blue-bg);color:var(--navy-600);margin:0 auto 12px">'+svgIcon(m.icon)+'</div><div style="font-weight:600;color:var(--navy-800)">'+m.label+'</div></div>';
+  });
+  h+='</div>';
+  // Riwayat pengajuan cuti
+  h+='<div class="card"><div class="card-header"><div class="card-title">Riwayat Pengajuan Cuti</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Tanggal Pengajuan</th><th>Jenis Cuti</th><th>Tanggal Mulai</th><th>Durasi</th><th>Status</th></tr></thead><tbody id="leaveTbody"></tbody></table></div></div>';
+  c.innerHTML=h;
+  renderLeaveRequests();
+};
+
+function renderLeaveRequests(){
+  var h='';
+  if(LEAVE_REQUESTS.length===0){
+    h='<tr><td colspan="5" style="text-align:center;color:#9aa1b1;padding:24px">Belum ada pengajuan cuti</td></tr>';
+  }else{
+    LEAVE_REQUESTS.forEach(function(r){
+      var badge=r.status==="Approved"?"badge-green":r.status==="Rejected"?"badge-red":"badge-yellow";
+      h+='<tr><td>'+r.tglPengajuan+'</td><td>'+r.jenis+'</td><td>'+r.tglMulai+'</td><td>'+r.durasi+' hari</td><td><span class="badge '+badge+'">'+r.status+'</span></td></tr>';
+    });
+  }
+  var tb=document.getElementById("leaveTbody");
+  if(tb)tb.innerHTML=h;
+}
+
+function showFormCuti(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Jenis Cuti</label><select id="cutiJenis" class="input"><option>Cuti Tahunan</option><option>Cuti Sakit</option><option>Cuti Melahirkan</option><option>Cuti Besar</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tanggal Mulai</label><input type="date" id="cutiMulai" class="input" value="2026-07-10"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Durasi (hari)</label><input type="number" id="cutiDurasi" class="input" value="3"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Alasan</label><textarea id="cutiAlasan" class="input" rows="3" placeholder="Alasan pengajuan cuti..."></textarea></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitCuti()">Ajukan Cuti</button>';
+  openModal("Pengajuan Cuti",h);
+}
+
+function submitCuti(){
+  var jenis=document.getElementById("cutiJenis").value;
+  var mulai=document.getElementById("cutiMulai").value;
+  var durasi=parseInt(document.getElementById("cutiDurasi").value)||1;
+  LEAVE_REQUESTS.push({tglPengajuan:"2026-07-01",jenis:jenis,tglMulai:mulai,durasi:durasi,status:"Pending"});
+  closeModal();
+  renderLeaveRequests();
+  // Also add to workflows
+  WORKFLOWS.unshift({id:Date.now(),jenis:"Cuti",nama:ROLE_USERS[currentRole].name,pos:"Employee",tanggal:"2026-07-01",status:"Pending",approver:"PIC Unit"});
+  alert("Pengajuan cuti berhasil dikirim. Menunggu approval dari atasan.");
+}
+
+function updateDataPribadi(){
+  var e=EMPLOYEES[0];
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama Lengkap</label><input class="input" value="'+e.nama+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>No. HP</label><input class="input" value="'+e.phone+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Email</label><input class="input" value="'+e.email+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Alamat</label><textarea class="input" rows="2">'+e.alamat+'</textarea></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="alert(\'Data pribadi berhasil diperbarui\');closeModal()">Simpan Perubahan</button>';
+  openModal("Update Data Pribadi",h);
+}
+
+function downloadSlipGaji(){
+  var h='<p style="margin-bottom:12px;color:#6b7280">Pilih periode slip gaji:</p>';
+  ["Juni 2026","Mei 2026","April 2026"].forEach(function(p){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eef0f4"><span>'+p+'</span><button class="btn btn-secondary btn-sm" onclick="simulateDownload(\'Slip Gaji '+p+'\')">Download</button></div>';
+  });
+  openModal("Download Slip Gaji",h);
+}
+
+function lihatDokumenESS(){
+  var docs=["SK Pengangkatan","SK Mutasi","Kontrak Kerja","Sertifikat Pelatihan"];
+  var h='';
+  docs.forEach(function(d){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eef0f4"><span style="display:flex;align-items:center;gap:8px">'+svgIcon("file")+' '+d+'</span><div><button class="btn btn-secondary btn-sm" onclick="alert(\'Pratinjau: '+d+'\')">Lihat</button> <button class="btn btn-secondary btn-sm" onclick="simulateDownload(\''+d+'\')">Download</button></div></div>';
+  });
+  openModal("Dokumen Saya",h);
+}
+
+function riwayatPelatihanESS(){
+  var h='<div class="table-wrap"><table><thead><tr><th>Pelatihan</th><th>Tanggal</th><th>Nilai</th><th>Status</th></tr></thead><tbody>';
+  [["Leadership Program","2026-03-15","85","Selesai"],["MS Office Advanced","2026-01-20","90","Selesai"],["Public Speaking","2025-11-10","78","Selesai"]].forEach(function(r){
+    h+='<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td><span class="badge badge-green">'+r[3]+'</span></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  openModal("Riwayat Pelatihan & Penilaian",h);
+}
+
+// Q. Recruitment Database
+RENDERERS.recruitment=function(c){
+  var h='<div class="page-title">Recruitment Database</div><div class="page-desc">Bank CV, pipeline seleksi, dan riwayat rekrutmen</div>';
+  // Kanban
+  h+='<div class="card"><div class="card-header"><div class="card-title">Pipeline Seleksi (Kanban)</div><button class="btn btn-primary btn-sm" onclick="alert(\'Form tambah kandidat baru\')">+ Tambah Kandidat</button></div>';
+  h+='<div class="kanban" id="kanbanBoard"></div></div>';
+  // CV Bank
+  h+='<div class="card"><div class="card-header"><div class="card-title">Bank CV Pelamar</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>Posisi Dilamar</th><th>Pendidikan</th><th>Pengalaman</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+  RECRUITS.forEach(function(r){
+    var badge=r.stage==="Hired"?"badge-green":r.stage==="Offer"?"badge-blue":r.stage==="Interview"?"badge-yellow":"badge-gray";
+    h+='<tr><td>'+r.nama+'</td><td>'+r.pos+'</td><td>'+rand(["S1","S2","D3"])+'</td><td>'+Math.floor(Math.random()*5)+' tahun</td><td><span class="badge '+badge+'">'+r.stage+'</span></td><td><button class="btn btn-secondary btn-sm" onclick="alert(\'Detail CV: '+r.nama+'\')">Lihat CV</button></td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  c.innerHTML=h;
+  renderKanban();
+};
+
+function showAddRecruitForm(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama Kandidat</label><input class="input" id="recNama" placeholder="Nama"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Posisi Dilamar</label><input class="input" id="recPos" placeholder="Posisi"></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitAddRecruit()">Tambah Kandidat</button>';
+  openModal("Tambah Kandidat Baru",h);
+}
+
+function submitAddRecruit(){
+  var nama=document.getElementById("recNama").value;
+  var pos=document.getElementById("recPos").value||"-";
+  if(!nama){alert("Nama wajib diisi");return;}
+  RECRUITS.push({id:Date.now(),nama:nama,pos:pos,stage:"Screening"});
+  closeModal();
+  renderKanban();
+  alert("Kandidat ditambahkan: "+nama);
+}
+
+function deleteRecruit(id){
+  if(!confirm("Hapus kandidat ini?"))return;
+  RECRUITS=RECRUITS.filter(function(x){return x.id!==id;});
+  renderKanban();
+}
+function renderKanban(){
+  var stages=["Screening","Interview","Offer","Hired"];
+  var h='';
+  stages.forEach(function(s){
+    var items=RECRUITS.filter(function(r){return r.stage===s;});
+    h+='<div class="kanban-col"><div class="kanban-col-header">'+s+' <span class="badge badge-gray">'+items.length+'</span></div>';
+    items.forEach(function(r){
+      var nextIdx=stages.indexOf(r.stage)+1;
+      var nextBtn=nextIdx<stages.length?'<button class="btn btn-primary btn-sm btn-block" style="margin-top:6px" onclick="moveKanban('+r.id+',\''+stages[nextIdx]+'\')">Next Stage &rarr;</button>':'<span class="badge badge-green" style="margin-top:6px;display:block;text-align:center">Selesai</span>';
+      h+='<div class="kanban-card"><div class="kanban-card-name">'+r.nama+'</div><div class="kanban-card-pos">'+r.pos+'</div>'+nextBtn+'<button class="btn btn-danger btn-sm btn-block" style="margin-top:4px" onclick="deleteRecruit('+r.id+')">Hapus</button></div>';
+    });
+    h+='</div>';
+  });
+  var kb=document.getElementById("kanbanBoard");
+  if(kb)kb.innerHTML=h;
+}
+
+function moveKanban(id,newStage){
+  var r=RECRUITS.filter(function(x){return x.id===id;})[0];
+  if(!r)return;
+  r.stage=newStage;
+  renderKanban();
+  alert(r.nama+" dipindahkan ke stage: "+newStage);
+}
+
+// R. Pusat Informasi Kebijakan & Budaya
+RENDERERS.kebijakan=function(c){
+  var h='<div class="page-title">Pusat Informasi Kebijakan & Budaya</div><div class="page-desc">Dokumen kebijakan, pedoman etika, dan budaya organisasi</div>';
+  // Dashboard kepatuhan
+  var readCount=POLICIES.filter(function(p){return p.read;}).length;
+  var pct=Math.round(readCount/POLICIES.length*100);
+  h+='<div class="card"><div class="card-header"><div class="card-title">Dashboard Kepatuuhan</div></div>';
+  h+='<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px"><div style="flex:1"><div class="progress" style="height:14px"><div class="progress-bar" id="kepatuhanBar" style="width:'+pct+'%;background:'+(pct>=80?"var(--green)":pct>=50?"var(--yellow)":"var(--red)")+'"></div></div></div><div style="font-size:18px;font-weight:700;color:var(--navy-900)" id="kepatuhanPct">'+pct+'%</div></div>';
+  h+='<p style="font-size:13px;color:#6b7280">'+readCount+' dari '+POLICIES.length+' kebijakan telah dibaca</p>';
+  h+='</div>';
+  // Accordion categories
+  h+='<div class="card"><div class="card-header"><div class="card-title">Daftar Kebijakan per Kategori</div></div>';
+  var cats=["Peraturan & Kebijakan","Pedoman Etika","Budaya Organisasi","Pedoman Penampilan","Orientasi Karyawan Baru"];
+  cats.forEach(function(cat){
+    var items=POLICIES.filter(function(p){return p.kategori===cat;});
+    h+='<div class="accordion-item">';
+    h+='<div class="accordion-header" onclick="toggleAccordion(this)"><span>'+cat+' ('+items.length+')</span>'+svgIcon("chevron")+'</div>';
+    h+='<div class="accordion-body">';
+    items.forEach(function(p){
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eef0f4"><span style="display:flex;align-items:center;gap:8px">'+svgIcon("file")+' '+p.judul+'</span><div><button class="btn btn-secondary btn-sm" onclick="readPolicy('+p.id+')">'+(p.read?'<span class="badge badge-green">Sudah Dibaca</span>':'Baca')+'</button></div></div>';
+    });
+    h+='</div></div>';
+  });
+  h+='</div>';
+  c.innerHTML=h;
+};
+
+function toggleAccordion(el){
+  el.parentNode.classList.toggle("open");
+}
+
+function readPolicy(id){
+  var p=POLICIES.filter(function(x){return x.id===id;})[0];
+  if(!p)return;
+  if(p.read){alert("Anda sudah membaca: "+p.judul);return;}
+  var h='<p style="margin-bottom:12px;color:#6b7280">'+p.judul+'</p>';
+  h+='<p style="line-height:1.7;margin-bottom:16px">Dokumen kebijakan ini berisi pedoman dan aturan yang berlaku bagi seluruh karyawan Yayasan Hasnur Centre. Isi dokumen mencakup ketentuan, prosedur, dan konsekuensi yang berlaku.</p>';
+  h+='<div style="background:var(--gray-50);padding:14px;border-radius:8px;margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="confirmRead" onchange="document.getElementById(\'confirmBtn\').disabled=!this.checked"> <span style="font-size:13px;font-weight:600">Saya Sudah Membaca dan Memahami kebijakan ini</span></label></div>';
+  h+='<button class="btn btn-primary btn-block" id="confirmBtn" disabled onclick="confirmReadPolicy('+id+')">Konfirmasi</button>';
+  openModal(p.judul,h);
+}
+
+function confirmReadPolicy(id){
+  var p=POLICIES.filter(function(x){return x.id===id;})[0];
+  p.read=true;
+  closeModal();
+  // Re-render kebijakan page
+  renderSection("kebijakan");
+  alert("Terima kasih telah membaca: "+p.judul);
+}
+
+// S. Digital Employee Handbook
+RENDERERS.handbook=function(c){
+  var h='<div class="page-title">Digital Employee Handbook</div><div class="page-desc">Panduan digital karyawan Yayasan Hasnur Centre</div>';
+  h+='<div class="handbook">';
+  h+='<div class="card" style="padding:12px"><div style="font-size:12px;font-weight:600;color:#9aa1b1;text-transform:uppercase;margin-bottom:8px">Daftar Isi</div>';
+  HANDBOOK_SECTIONS.forEach(function(s,i){
+    h+='<div class="toc-item'+(i===0?" active":"")+'" onclick="showHandbookSection(this,\''+s.id+'\')">'+s.title+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="handbook-content" id="handbookContent"></div>';
+  h+='</div>';
+  c.innerHTML=h;
+  showHandbookSection(document.querySelector(".toc-item"),HANDBOOK_SECTIONS[0].id);
+};
+
+function showHandbookSection(el,id){
+  if(el){
+    el.parentNode.querySelectorAll(".toc-item").forEach(function(t){t.classList.remove("active");});
+    el.classList.add("active");
+  }else{
+    var items=document.querySelectorAll(".toc-item");
+    items.forEach(function(t){t.classList.remove("active");});
+    var idx=HANDBOOK_SECTIONS.map(function(s){return s.id;}).indexOf(id);
+    if(items[idx])items[idx].classList.add("active");
+  }
+  var s=HANDBOOK_SECTIONS.filter(function(x){return x.id===id;})[0];
+  if(!s)return;
+  var hc=document.getElementById("handbookContent");
+  if(hc)hc.innerHTML="<h3>"+s.title+"</h3><p>"+s.content+"</p><p style='color:#9aa1b1;font-size:12px;margin-top:20px'>Bagian dari Digital Employee Handbook - Yayasan Hasnur Centre</p>";
+}
+
+// ============ INIT ============
+renderNav();
+navigateTo("overview");
+</script>
+</body>
+</html>
