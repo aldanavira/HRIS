@@ -337,35 +337,96 @@ var NAMES = ["Ahmad Fauzi","Siti Nurhaliza","Rahmat Hidayat","Dewi Lestari","Bam
 function initials(n){var p=n.split(" ");return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase();}
 function rand(a){return a[Math.floor(Math.random()*a.length)];}
 
+var DEPARTMENTS = ["Pendidikan","Kesehatan","Sosial","Dakwah","Pengembangan","Administrasi"];
+var SECTIONS = ["Tata Usaha","Akademik","Lapangan","Operasional","Manajemen","Pelayanan"];
+var ALASAN_RESIGN = ["Gaji tidak sesuai","Jenjang karir terbatas","Relokasi keluarga","Lingkungan kerja","Melanjutkan pendidikan","Pindah ke perusahaan lain","Alasan pribadi","Pensiun"];
+var PTKP_OPTIONS = ["TK/0","TK/1","TK/2","TK/3","K/0","K/1","K/2","K/3"];
+
 var EMPLOYEES = [];
 for(var i=0;i<20;i++){
   var n=NAMES[i];
-  var st=Math.random()>.1?"aktif":"nonaktif";
+  var st=Math.random()>.15?"aktif":"nonaktif";
   var jp=Math.random()>.5?"PKWTT":"PKWT";
+  var gender=Math.random()>.5?"L":"P";
+  var tglMasuk="20"+(10+Math.floor(Math.random()*14))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9);
+  var tglLahir="19"+(70+Math.floor(Math.random()*20))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9);
+  var tglKeluar = st==="nonaktif" ? "2026-0"+(1+Math.floor(Math.random()*6))+"-"+(1+Math.floor(Math.random()*28)) : "";
+  var alasanKeluar = st==="nonaktif" ? rand(ALASAN_RESIGN) : "";
+  var masaKerjaTahun = 2026 - parseInt(tglMasuk.substring(0,4));
   EMPLOYEES.push({
     id:i+1, nama:n, nrp:"NRP-"+(1001+i), unit:rand(UNITS), area:rand(AREAS),
-    jabatan:rand(JABATAN), grade:rand(GRADES), gender:Math.random()>.5?"L":"P",
-    status:st, jenis:jp, tglMasuk:"20"+(10+Math.floor(Math.random()*14))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9),
-    tglLahir:"19"+(70+Math.floor(Math.random()*20))+"-0"+(1+Math.floor(Math.random()*9))+"-1"+Math.floor(Math.random()*9),
+    departemen:rand(DEPARTMENTS), section:rand(SECTIONS),
+    jabatan:rand(JABATAN), grade:rand(GRADES), gender:gender,
+    status:st, jenis:jp, tglMasuk:tglMasuk, tglKeluar:tglKeluar, alasanKeluar:alasanKeluar,
+    tglLahir:tglLahir, tempatLahir:rand(["Banjarmasin","Banjarbaru","Jakarta","Surabaya","Martapura"]),
     phone:"08"+(10000000+Math.floor(Math.random()*89999999)),
     email:n.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",
     alamat:"Jl. "+rand(["Merdeka","Sudirman","Ahmad Yani","Gatot Subroto","Diponegoro"])+", "+rand(AREAS),
     gaji:3000000+Math.floor(Math.random()*7)*1000000,
+    tunjJabatan:Math.floor(Math.random()*5)*500000,
+    tunjMakan:Math.floor(Math.random()*3)*300000,
+    tunjTransport:Math.floor(Math.random()*3)*300000,
     statusKawin:Math.random()>.4?"Menikah":"Lajang",
     anak:Math.floor(Math.random()*4),
+    namaPasangan:Math.random()>.4?"-":"Nama Pasangan",
     pendidikan:rand(["S1","S2","D3","SMA","S1","S2"]),
     jurusan:rand(["Manajemen","Akuntansi","Teknik","Hukum","Kesehatan","Pendidikan"]),
-    bpjs:"BPJS-"+(20001+i), npwp:"NPWP-"+(30001+i), bank:rand(["BCA","Mandiri","BNI","BRI"])
+    institusi:rand(["Universitas Lambung Mangkurat","Universitas Indonesia","Universitas Gadjah Mada","Politeknik Negeri Banjarmasin","SMA Negeri 1 Banjarmasin"]),
+    bpjs:"BPJS-"+(20001+i), npwp:"NPWP-"+(30001+i), bank:rand(["BCA","Mandiri","BNI","BRI"]),
+    noRek:""+(7000000+Math.floor(Math.random()*2999999)),
+    ptkp:rand(PTKP_OPTIONS),
+    masaKerja:masaKerjaTahun,
+    statusPajak:rand(["TK/0","K/1","K/2","TK/0","K/0"])
   });
 }
 
-var CONTRACTS = EMPLOYEES.slice(0,12).map(function(e,i){
+
+var TURNOVER_DATA = [];
+EMPLOYEES.forEach(function(e){
+  if(e.status==="nonaktif"&&e.tglKeluar){
+    TURNOVER_DATA.push({
+      id:e.id, emp:e, tglKeluar:e.tglKeluar, alasan:e.alasanKeluar||"Lainnya",
+      jenis:e.jenis, unit:e.unit, jabatan:e.jabatan
+    });
+  }
+});
+
+function addTurnoverEntry(empId, tglKeluar, alasan){
+  var e=EMPLOYEES.filter(function(x){return x.id===empId;})[0];
+  if(!e)return;
+  e.status="nonaktif";
+  e.tglKeluar=tglKeluar;
+  e.alasanKeluar=alasan;
+  TURNOVER_DATA.push({id:e.id,emp:e,tglKeluar:tglKeluar,alasan:alasan,jenis:e.jenis,unit:e.unit,jabatan:e.jabatan});
+}
+
+function addNewHire(nama, nrp, unit, area, jabatan, jenis, tglMasuk){
+  var newId=EMPLOYEES.length+1;
+  var e={
+    id:newId,nama:nama,nrp:nrp||("NRP-"+(1000+newId)),unit:unit,area:area,
+    departemen:unit,section:"Tata Usaha",jabatan:jabatan,grade:"Grade 1",gender:"L",
+    status:"aktif",jenis:jenis,tglMasuk:tglMasuk,tglKeluar:"",alasanKeluar:"",
+    tglLahir:"1990-01-01",tempatLahir:"Banjarmasin",phone:"081234567890",
+    email:nama.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",alamat:"-",
+    gaji:3000000,tunjJabatan:0,tunjMakan:0,tunjTransport:0,
+    statusKawin:"Lajang",anak:0,namaPasangan:"-",
+    pendidikan:"S1",jurusan:"-",institusi:"-",
+    bpjs:"BPJS-"+(20000+newId),npwp:"NPWP-"+(30000+newId),bank:"BCA",
+    noRek:""+(7000000+newId),ptkp:"TK/0",masaKerja:0,statusPajak:"TK/0"
+  };
+  EMPLOYEES.push(e);
+  return e;
+}
+
+var CONTRACTS = EMPLOYEES.filter(function(e){return e.jenis==="PKWT";}).map(function(e,i){
   var ke=1+Math.floor(Math.random()*3);
+  var start="2025-01-15";
   var end="2026-0"+(1+Math.floor(Math.random()*9))+"-15";
   var statusC="aktif";
   if(end<"2026-03")statusC="expired";
   else if(end<"2026-08")statusC="mendekati berakhir";
-  return {id:i+1, emp:e, jenis:e.jenis, tglKontrak:"2025-01-15", tglBerakhir:end, kontrakKe:ke, status:statusC};
+  var masaKerja=Math.round((new Date(end)-new Date(start))/(1000*60*60*24*30));
+  return {id:i+1, emp:e, jenis:e.jenis, tglKontrak1:start, tglKontrak2:ke>1?"2025-07-15":"", tglKontrak3:ke>2?"2026-01-15":"", tglBerakhir:end, kontrakKe:ke, status:statusC, masaKerjaBulan:masaKerja};
 });
 
 var ATTENDANCE = EMPLOYEES.map(function(e,i){
@@ -876,25 +937,29 @@ function switchModalTab(el,idx){
 
 function dl(label,val){return '<dt>'+label+'</dt><dd>'+val+'</dd>';}
 function empTabPersonal(e){
-  return '<div class="detail-grid">'+dl("Nama Lengkap",e.nama)+dl("NRP",e.nrp)+dl("Tanggal Lahir",e.tglLahir)+dl("Jenis Kelamin",e.gender==="L"?"Laki-laki":"Perempuan")+dl("No. HP",e.phone)+dl("Email",e.email)+dl("Alamat",e.alamat)+dl("Status Pernikahan",e.statusKawin)+'</div>';
+  return '<div class="detail-grid">'+dl("Nama Lengkap",e.nama)+dl("NRP",e.nrp)+dl("Tempat Lahir",e.tempatLahir||"-")+dl("Tanggal Lahir",e.tglLahir)+dl("Jenis Kelamin",e.gender==="L"?"Laki-laki":"Perempuan")+dl("No. HP",e.phone)+dl("Email",e.email)+dl("Alamat",e.alamat)+dl("Status Pernikahan",e.statusKawin)+'</div>';
 }
 function empTabKeluarga(e){
-  return '<div class="detail-grid">'+dl("Status Pernikahan",e.statusKawin)+dl("Jumlah Anak",e.anak)+'</div><p style="margin-top:12px;color:#6b7280">Data pasangan dan anak dapat diperbarui melalui modul ESS.</p>';
+  return '<div class="detail-grid">'+dl("Status Pernikahan",e.statusKawin)+dl("Jumlah Anak",e.anak)+dl("Nama Pasangan",e.namaPasangan||"-")+'</div>';
 }
 function empTabPendidikan(e){
-  return '<div class="detail-grid">'+dl("Pendidikan Terakhir",e.pendidikan)+dl("Jurusan",e.jurusan)+'</div>';
+  return '<div class="detail-grid">'+dl("Pendidikan Terakhir",e.pendidikan)+dl("Jurusan",e.jurusan)+dl("Institusi",e.institusi||"-")+'</div>';
 }
 function empTabPekerjaan(e){
-  return '<div class="detail-grid">'+dl("Unit Kerja",e.unit)+dl("Area Kerja",e.area)+dl("Jabatan",e.jabatan)+dl("Grade",e.grade)+dl("Jenis Kepegawaian",e.jenis)+dl("Tanggal Masuk",e.tglMasuk)+dl("Status",e.status)+'</div>';
+  var h='<div class="detail-grid">'+dl("Unit Kerja",e.unit)+dl("Area Kerja",e.area)+dl("Departemen",e.departemen||"-")+dl("Section",e.section||"-")+dl("Jabatan",e.jabatan)+dl("Grade",e.grade)+dl("Jenis Kepegawaian",e.jenis)+dl("Tanggal Masuk",e.tglMasuk)+dl("Status",e.status==="aktif"?"<span class=\"badge badge-green\">Aktif</span>":"<span class=\"badge badge-red\">Nonaktif</span>")+dl("Masa Kerja",e.masaKerja+" tahun");
+  if(e.tglKeluar)h+=dl("Tanggal Keluar",e.tglKeluar)+dl("Alasan Keluar",e.alasanKeluar||"-");
+  h+='</div>';
+  return h;
 }
 function empTabPayroll(e){
-  return '<div class="detail-grid">'+dl("Gaji Pokok","Rp "+e.gaji.toLocaleString("id-ID"))+dl("Bank",e.bank)+dl("No. Rekening","****"+(1000+e.id))+'</div>';
+  var total=e.gaji+(e.tunjJabatan||0)+(e.tunjMakan||0)+(e.tunjTransport||0);
+  return '<div class="detail-grid">'+dl("Gaji Pokok","Rp "+e.gaji.toLocaleString("id-ID"))+dl("Tunjangan Jabatan","Rp "+(e.tunjJabatan||0).toLocaleString("id-ID"))+dl("Tunjangan Makan","Rp "+(e.tunjMakan||0).toLocaleString("id-ID"))+dl("Tunjangan Transport","Rp "+(e.tunjTransport||0).toLocaleString("id-ID"))+dl("Total Pendapatan","Rp "+total.toLocaleString("id-ID"))+dl("Bank",e.bank)+dl("No. Rekening",e.noRek||"****"+(1000+e.id))+'</div>';
 }
 function empTabBPJS(e){
   return '<div class="detail-grid">'+dl("BPJS Kesehatan",e.bpjs)+dl("BPJS Ketenagakerjaan","TK-"+e.bpjs.substring(5))+'</div>';
 }
 function empTabPajak(e){
-  return '<div class="detail-grid">'+dl("NPWP",e.npwp)+dl("Status PTKP","TK/0")+'</div>';
+  return '<div class="detail-grid">'+dl("NPWP",e.npwp)+dl("Status PTKP",e.ptkp||e.statusPajak||"TK/0")+'</div>';
 }
 function empTabDokumen(e){
   var docs=["SK Pengangkatan","Ijazah","Sertifikat","KTP","KK","NPWP","BPJS"];
@@ -912,17 +977,63 @@ function empTabRiwayat(e){
 }
 
 function showAddEmpForm(){
-  var h='<div class="form-row"><div class="form-group"><label>Nama Lengkap</label><input class="input" id="addNama" placeholder="Nama karyawan"></div><div class="form-group"><label>NRP</label><input class="input" id="addNrp" placeholder="NRP-XXXX"></div></div>';
-  h+='<div class="form-row"><div class="form-group"><label>Unit Kerja</label><select id="addUnit" class="input">';
+  var h='<div class="modal-tabs">';
+  var tabs=["Data Personal","Keluarga","Pendidikan","Pekerjaan","Payroll & BPJS","Pajak"];
+  tabs.forEach(function(t,i){h+='<div class="modal-tab'+(i===0?" active":"")+'" onclick="switchModalTab(this,'+i+')">'+t+'</div>';});
+  h+='</div>';
+  h+='<div id="tabContents">';
+  // Tab 0: Data Personal
+  h+='<div class="tab-content active">';
+  h+='<div class="form-row"><div class="form-group"><label>Nama Lengkap *</label><input class="input" id="addNama" placeholder="Nama karyawan"></div><div class="form-group"><label>NRP *</label><input class="input" id="addNrp" placeholder="NRP-XXXX"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tempat Lahir</label><input class="input" id="addTempatLahir" placeholder="Tempat lahir"></div><div class="form-group"><label>Tanggal Lahir</label><input class="input" type="date" id="addTglLahir" value="1990-01-01"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis Kelamin</label><select id="addGender" class="input"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div><div class="form-group"><label>No. HP</label><input class="input" id="addPhone" placeholder="08xxxx"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Email</label><input class="input" id="addEmail" placeholder="email@hasnurcentre.org"></div></div>';
+  h+='<div class="form-group"><label>Alamat Lengkap</label><textarea class="input" id="addAlamat" rows="2" placeholder="Alamat lengkap"></textarea></div>';
+  h+='</div>';
+  // Tab 1: Keluarga
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Status Pernikahan</label><select id="addKawin" class="input"><option value="Lajang">Lajang</option><option value="Menikah">Menikah</option><option value="Cerai">Cerai</option></select></div><div class="form-group"><label>Jumlah Anak</label><input class="input" type="number" id="addAnak" value="0"></div></div>';
+  h+='<div class="form-group"><label>Nama Pasangan</label><input class="input" id="addPasangan" placeholder="Nama pasangan (jika menikah)"></div>';
+  h+='</div>';
+  // Tab 2: Pendidikan
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Pendidikan Terakhir</label><select id="addPendidikan" class="input"><option value="SMA">SMA</option><option value="D3">D3</option><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option></select></div><div class="form-group"><label>Jurusan</label><input class="input" id="addJurusan" placeholder="Jurusan"></div></div>';
+  h+='<div class="form-group"><label>Institusi Pendidikan</label><input class="input" id="addInstitusi" placeholder="Nama institusi"></div>';
+  h+='</div>';
+  // Tab 3: Pekerjaan
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Unit Kerja *</label><select id="addUnit" class="input">';
   UNITS.forEach(function(u){h+='<option value="'+u+'">'+u+'</option>';});
   h+='</select></div><div class="form-group"><label>Area Kerja</label><select id="addArea" class="input">';
   AREAS.forEach(function(a){h+='<option value="'+a+'">'+a+'</option>';});
   h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Departemen</label><select id="addDept" class="input">';
+  DEPARTMENTS.forEach(function(d){h+='<option value="'+d+'">'+d+'</option>';});
+  h+='</select></div><div class="form-group"><label>Section</label><select id="addSection" class="input">';
+  SECTIONS.forEach(function(s){h+='<option value="'+s+'">'+s+'</option>';});
+  h+='</select></div></div>';
   h+='<div class="form-row"><div class="form-group"><label>Jabatan</label><select id="addJab" class="input">';
   JABATAN.forEach(function(j){h+='<option value="'+j+'">'+j+'</option>';});
-  h+='</select></div><div class="form-group"><label>Jenis Kepegawaian</label><select id="addJenis" class="input"><option value="PKWTT">PKWTT</option><option value="PKWT">PKWT</option></select></div></div>';
-  h+='<div class="form-row"><div class="form-group"><label>Tanggal Masuk</label><input class="input" type="date" id="addMasuk" value="2026-07-01"></div><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="addGaji" value="3000000"></div></div>';
-  h+='<button class="btn btn-primary btn-block" onclick="submitAddEmp()">Simpan Karyawan</button>';
+  h+='</select></div><div class="form-group"><label>Grade</label><select id="addGrade" class="input">';
+  GRADES.forEach(function(g){h+='<option value="'+g+'">'+g+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis Kepegawaian</label><select id="addJenis" class="input"><option value="PKWTT">PKWTT</option><option value="PKWT">PKWT</option></select></div><div class="form-group"><label>Tanggal Masuk</label><input class="input" type="date" id="addMasuk" value="2026-07-01"></div></div>';
+  h+='</div>';
+  // Tab 4: Payroll & BPJS
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="addGaji" value="3000000"></div><div class="form-group"><label>Tunjangan Jabatan (Rp)</label><input class="input" type="number" id="addTunjJab" value="0"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tunjangan Makan (Rp)</label><input class="input" type="number" id="addTunjMakan" value="0"></div><div class="form-group"><label>Tunjangan Transport (Rp)</label><input class="input" type="number" id="addTunjTransport" value="0"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Bank</label><select id="addBank" class="input"><option>BCA</option><option>Mandiri</option><option>BNI</option><option>BRI</option></select></div><div class="form-group"><label>No. Rekening</label><input class="input" id="addNoRek" placeholder="No. rekening"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>No. BPJS Kesehatan</label><input class="input" id="addBpjs" placeholder="BPJS-XXXX"></div><div class="form-group"><label>No. BPJS Ketenagakerjaan</label><input class="input" id="addBpjsTk" placeholder="TK-XXXX"></div></div>';
+  h+='</div>';
+  // Tab 5: Pajak
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>NPWP</label><input class="input" id="addNpwp" placeholder="NPWP-XXXX"></div><div class="form-group"><label>Status PTKP</label><select id="addPtkp" class="input">';
+  PTKP_OPTIONS.forEach(function(p){h+='<option value="'+p+'">'+p+'</option>';});
+  h+='</select></div></div>';
+  h+='</div>';
+  h+='</div>';
+  h+='<div style="margin-top:16px"><button class="btn btn-primary btn-block" onclick="submitAddEmp()">Simpan Karyawan</button></div>';
   openModal("Tambah Karyawan Baru",h);
 }
 
@@ -930,14 +1041,42 @@ function submitAddEmp(){
   var nama=document.getElementById("addNama").value.trim();
   if(!nama){alert("Nama karyawan wajib diisi");return;}
   var newId=EMPLOYEES.length+1;
+  var tglMasuk=document.getElementById("addMasuk").value;
   EMPLOYEES.push({
-    id:newId,nama:nama,nrp:document.getElementById("addNrp").value||("NRP-"+(1000+newId)),
-    unit:document.getElementById("addUnit").value,area:document.getElementById("addArea").value,
-    jabatan:document.getElementById("addJab").value,grade:"Grade 1",gender:"L",status:"aktif",
-    jenis:document.getElementById("addJenis").value,tglMasuk:document.getElementById("addMasuk").value,
-    tglLahir:"1990-01-01",phone:"081234567890",email:nama.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",
-    alamat:"-",gaji:parseInt(document.getElementById("addGaji").value)||3000000,statusKawin:"Lajang",anak:0,
-    pendidikan:"S1",jurusan:"-",bpjs:"BPJS-"+(20000+newId),npwp:"NPWP-"+(30000+newId),bank:"BCA"
+    id:newId,nama:nama,
+    nrp:document.getElementById("addNrp").value||("NRP-"+(1000+newId)),
+    unit:document.getElementById("addUnit").value,
+    area:document.getElementById("addArea").value,
+    departemen:document.getElementById("addDept").value,
+    section:document.getElementById("addSection").value,
+    jabatan:document.getElementById("addJab").value,
+    grade:document.getElementById("addGrade").value,
+    gender:document.getElementById("addGender").value,
+    status:"aktif",
+    jenis:document.getElementById("addJenis").value,
+    tglMasuk:tglMasuk,tglKeluar:"",alasanKeluar:"",
+    tglLahir:document.getElementById("addTglLahir").value,
+    tempatLahir:document.getElementById("addTempatLahir").value||"-",
+    phone:document.getElementById("addPhone").value||"-",
+    email:document.getElementById("addEmail").value||nama.toLowerCase().replace(/ /g,".")+"@hasnurcentre.org",
+    alamat:document.getElementById("addAlamat").value||"-",
+    gaji:parseInt(document.getElementById("addGaji").value)||3000000,
+    tunjJabatan:parseInt(document.getElementById("addTunjJab").value)||0,
+    tunjMakan:parseInt(document.getElementById("addTunjMakan").value)||0,
+    tunjTransport:parseInt(document.getElementById("addTunjTransport").value)||0,
+    statusKawin:document.getElementById("addKawin").value,
+    anak:parseInt(document.getElementById("addAnak").value)||0,
+    namaPasangan:document.getElementById("addPasangan").value||"-",
+    pendidikan:document.getElementById("addPendidikan").value,
+    jurusan:document.getElementById("addJurusan").value||"-",
+    institusi:document.getElementById("addInstitusi").value||"-",
+    bpjs:document.getElementById("addBpjs").value||("BPJS-"+(20000+newId)),
+    npwp:document.getElementById("addNpwp").value||("NPWP-"+(30000+newId)),
+    bank:document.getElementById("addBank").value,
+    noRek:document.getElementById("addNoRek").value||""+(7000000+newId),
+    ptkp:document.getElementById("addPtkp").value,
+    masaKerja:2026-parseInt(tglMasuk.substring(0,4)),
+    statusPajak:document.getElementById("addPtkp").value
   });
   closeModal();
   filterEmployees();
@@ -947,17 +1086,72 @@ function submitAddEmp(){
 function showEditEmpForm(id){
   var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
   if(!e)return;
-  var h='<div class="form-row"><div class="form-group"><label>Nama Lengkap</label><input class="input" id="editNama" value="'+e.nama+'"></div><div class="form-group"><label>NRP</label><input class="input" id="editNrp" value="'+e.nrp+'"></div></div>';
+  var h='<div class="modal-tabs">';
+  var tabs=["Data Personal","Keluarga","Pendidikan","Pekerjaan","Payroll & BPJS","Pajak"];
+  tabs.forEach(function(t,i){h+='<div class="modal-tab'+(i===0?" active":"")+'" onclick="switchModalTab(this,'+i+')">'+t+'</div>';});
+  h+='</div>';
+  h+='<div id="tabContents">';
+  // Tab 0: Data Personal
+  h+='<div class="tab-content active">';
+  h+='<div class="form-row"><div class="form-group"><label>Nama Lengkap *</label><input class="input" id="editNama" value="'+e.nama+'"></div><div class="form-group"><label>NRP *</label><input class="input" id="editNrp" value="'+e.nrp+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tempat Lahir</label><input class="input" id="editTempatLahir" value="'+(e.tempatLahir||"-")+'"></div><div class="form-group"><label>Tanggal Lahir</label><input class="input" type="date" id="editTglLahir" value="'+e.tglLahir+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis Kelamin</label><select id="editGender" class="input"><option value="L"'+(e.gender==="L"?" selected":"")+'>Laki-laki</option><option value="P"'+(e.gender==="P"?" selected":"")+'>Perempuan</option></select></div><div class="form-group"><label>No. HP</label><input class="input" id="editPhone" value="'+e.phone+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Email</label><input class="input" id="editEmail" value="'+e.email+'"></div></div>';
+  h+='<div class="form-group"><label>Alamat Lengkap</label><textarea class="input" id="editAlamat" rows="2">'+e.alamat+'</textarea></div>';
+  h+='</div>';
+  // Tab 1: Keluarga
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Status Pernikahan</label><select id="editKawin" class="input"><option value="Lajang"'+(e.statusKawin==="Lajing"?" selected":"")+'>Lajang</option><option value="Menikah"'+(e.statusKawin==="Menikah"?" selected":"")+'>Menikah</option><option value="Cerai"'+(e.statusKawin==="Cerai"?" selected":"")+'>Cerai</option></select></div><div class="form-group"><label>Jumlah Anak</label><input class="input" type="number" id="editAnak" value="'+e.anak+'"></div></div>';
+  h+='<div class="form-group"><label>Nama Pasangan</label><input class="input" id="editPasangan" value="'+(e.namaPasangan||"-")+'"></div>';
+  h+='</div>';
+  // Tab 2: Pendidikan
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Pendidikan Terakhir</label><select id="editPendidikan" class="input"><option value="SMA"'+(e.pendidikan==="SMA"?" selected":"")+'>SMA</option><option value="D3"'+(e.pendidikan==="D3"?" selected":"")+'>D3</option><option value="S1"'+(e.pendidikan==="S1"?" selected":"")+'>S1</option><option value="S2"'+(e.pendidikan==="S2"?" selected":"")+'>S2</option><option value="S3"'+(e.pendidikan==="S3"?" selected":"")+'>S3</option></select></div><div class="form-group"><label>Jurusan</label><input class="input" id="editJurusan" value="'+e.jurusan+'"></div></div>';
+  h+='<div class="form-group"><label>Institusi Pendidikan</label><input class="input" id="editInstitusi" value="'+(e.institusi||"-")+'"></div>';
+  h+='</div>';
+  // Tab 3: Pekerjaan
+  h+='<div class="tab-content">';
   h+='<div class="form-row"><div class="form-group"><label>Unit Kerja</label><select id="editUnit" class="input">';
   UNITS.forEach(function(u){h+='<option value="'+u+'"'+(u===e.unit?" selected":"")+'>'+u+'</option>';});
   h+='</select></div><div class="form-group"><label>Area Kerja</label><select id="editArea" class="input">';
   AREAS.forEach(function(a){h+='<option value="'+a+'"'+(a===e.area?" selected":"")+'>'+a+'</option>';});
   h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Departemen</label><select id="editDept" class="input">';
+  DEPARTMENTS.forEach(function(d){h+='<option value="'+d+'"'+(d===e.departemen?" selected":"")+'>'+d+'</option>';});
+  h+='</select></div><div class="form-group"><label>Section</label><select id="editSection" class="input">';
+  SECTIONS.forEach(function(s){h+='<option value="'+s+'"'+(s===e.section?" selected":"")+'>'+s+'</option>';});
+  h+='</select></div></div>';
   h+='<div class="form-row"><div class="form-group"><label>Jabatan</label><select id="editJab" class="input">';
   JABATAN.forEach(function(j){h+='<option value="'+j+'"'+(j===e.jabatan?" selected":"")+'>'+j+'</option>';});
-  h+='</select></div><div class="form-group"><label>Status</label><select id="editStatus" class="input"><option value="aktif"'+(e.status==="aktif"?" selected":"")+'>Aktif</option><option value="nonaktif"'+(e.status==="nonaktif"?" selected":"")+'>Nonaktif</option></select></div></div>';
-  h+='<div class="form-row"><div class="form-group"><label>Jenis Kepegawaian</label><select id="editJenis" class="input"><option value="PKWTT"'+(e.jenis==="PKWTT"?" selected":"")+'>PKWTT</option><option value="PKWT"'+(e.jenis==="PKWT"?" selected":"")+'>PKWT</option></select></div><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="editGaji" value="'+e.gaji+'"></div></div>';
-  h+='<button class="btn btn-primary btn-block" onclick="submitEditEmp('+id+')">Simpan Perubahan</button>';
+  h+='</select></div><div class="form-group"><label>Grade</label><select id="editGrade" class="input">';
+  GRADES.forEach(function(g){h+='<option value="'+g+'"'+(g===e.grade?" selected":"")+'>'+g+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jenis Kepegawaian</label><select id="editJenis" class="input"><option value="PKWTT"'+(e.jenis==="PKWTT"?" selected":"")+'>PKWTT</option><option value="PKWT"'+(e.jenis==="PKWT"?" selected":"")+'>PKWT</option></select></div><div class="form-group"><label>Status</label><select id="editStatus" class="input"><option value="aktif"'+(e.status==="aktif"?" selected":"")+'>Aktif</option><option value="nonaktif"'+(e.status==="nonaktif"?" selected":"")+'>Nonaktif</option></select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tanggal Masuk</label><input class="input" type="date" id="editMasuk" value="'+e.tglMasuk+'"></div>';
+  if(e.status==="nonaktif"){
+    h+='<div class="form-group"><label>Tanggal Keluar</label><input class="input" type="date" id="editKeluar" value="'+(e.tglKeluar||"")+'"></div></div>';
+    h+='<div class="form-group"><label>Alasan Keluar</label><select id="editAlasanKeluar" class="input">';
+    ALASAN_RESIGN.forEach(function(a){h+='<option value="'+a+'"'+(a===e.alasanKeluar?" selected":"")+'>'+a+'</option>';});
+    h+='</select></div>';
+  }else{
+    h+='</div>';
+  }
+  h+='</div>';
+  // Tab 4: Payroll & BPJS
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>Gaji Pokok (Rp)</label><input class="input" type="number" id="editGaji" value="'+e.gaji+'"></div><div class="form-group"><label>Tunjangan Jabatan (Rp)</label><input class="input" type="number" id="editTunjJab" value="'+(e.tunjJabatan||0)+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tunjangan Makan (Rp)</label><input class="input" type="number" id="editTunjMakan" value="'+(e.tunjMakan||0)+'"></div><div class="form-group"><label>Tunjangan Transport (Rp)</label><input class="input" type="number" id="editTunjTransport" value="'+(e.tunjTransport||0)+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Bank</label><select id="editBank" class="input"><option'+(e.bank==="BCA"?" selected":"")+'>BCA</option><option'+(e.bank==="Mandiri"?" selected":"")+'>Mandiri</option><option'+(e.bank==="BNI"?" selected":"")+'>BNI</option><option'+(e.bank==="BRI"?" selected":"")+'>BRI</option></select></div><div class="form-group"><label>No. Rekening</label><input class="input" id="editNoRek" value="'+(e.noRek||"")+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>No. BPJS Kesehatan</label><input class="input" id="editBpjs" value="'+e.bpjs+'"></div><div class="form-group"><label>No. BPJS Ketenagakerjaan</label><input class="input" id="editBpjsTk" value="TK-'+e.bpjs.substring(5)+'"></div></div>';
+  h+='</div>';
+  // Tab 5: Pajak
+  h+='<div class="tab-content">';
+  h+='<div class="form-row"><div class="form-group"><label>NPWP</label><input class="input" id="editNpwp" value="'+e.npwp+'"></div><div class="form-group"><label>Status PTKP</label><select id="editPtkp" class="input">';
+  PTKP_OPTIONS.forEach(function(p){h+='<option value="'+p+'"'+(p===e.ptkp?" selected":"")+'>'+p+'</option>';});
+  h+='</select></div></div>';
+  h+='</div>';
+  h+='</div>';
+  h+='<div style="margin-top:16px"><button class="btn btn-primary btn-block" onclick="submitEditEmp('+id+')">Simpan Perubahan</button></div>';
   openModal("Edit Data Karyawan - "+e.nama,h);
 }
 
@@ -966,12 +1160,40 @@ function submitEditEmp(id){
   if(!e)return;
   e.nama=document.getElementById("editNama").value;
   e.nrp=document.getElementById("editNrp").value;
+  e.tempatLahir=document.getElementById("editTempatLahir").value;
+  e.tglLahir=document.getElementById("editTglLahir").value;
+  e.gender=document.getElementById("editGender").value;
+  e.phone=document.getElementById("editPhone").value;
+  e.email=document.getElementById("editEmail").value;
+  e.alamat=document.getElementById("editAlamat").value;
+  e.statusKawin=document.getElementById("editKawin").value;
+  e.anak=parseInt(document.getElementById("editAnak").value)||0;
+  e.namaPasangan=document.getElementById("editPasangan").value;
+  e.pendidikan=document.getElementById("editPendidikan").value;
+  e.jurusan=document.getElementById("editJurusan").value;
+  e.institusi=document.getElementById("editInstitusi").value;
   e.unit=document.getElementById("editUnit").value;
   e.area=document.getElementById("editArea").value;
+  e.departemen=document.getElementById("editDept").value;
+  e.section=document.getElementById("editSection").value;
   e.jabatan=document.getElementById("editJab").value;
-  e.status=document.getElementById("editStatus").value;
+  e.grade=document.getElementById("editGrade").value;
   e.jenis=document.getElementById("editJenis").value;
+  e.status=document.getElementById("editStatus").value;
+  e.tglMasuk=document.getElementById("editMasuk").value;
+  if(document.getElementById("editKeluar"))e.tglKeluar=document.getElementById("editKeluar").value;
+  if(document.getElementById("editAlasanKeluar"))e.alasanKeluar=document.getElementById("editAlasanKeluar").value;
   e.gaji=parseInt(document.getElementById("editGaji").value)||e.gaji;
+  e.tunjJabatan=parseInt(document.getElementById("editTunjJab").value)||0;
+  e.tunjMakan=parseInt(document.getElementById("editTunjMakan").value)||0;
+  e.tunjTransport=parseInt(document.getElementById("editTunjTransport").value)||0;
+  e.bank=document.getElementById("editBank").value;
+  e.noRek=document.getElementById("editNoRek").value;
+  e.bpjs=document.getElementById("editBpjs").value;
+  e.npwp=document.getElementById("editNpwp").value;
+  e.ptkp=document.getElementById("editPtkp").value;
+  e.statusPajak=document.getElementById("editPtkp").value;
+  e.masaKerja=2026-parseInt(e.tglMasuk.substring(0,4));
   closeModal();
   filterEmployees();
   alert("Data karyawan berhasil diperbarui: "+e.nama);
@@ -1004,6 +1226,57 @@ function simulateImport(){
   alert("Import berhasil! "+count+" karyawan baru ditambahkan dari file.");
 }
 
+
+// ============ EDIT ROLE FORM (Hak Akses) ============
+function showEditRoleForm(roleName){
+  var roleKey=roleName.toLowerCase().replace(/\s/g,"");
+  var roleMap={"superadmin":"superadmin","timhc":"hc","picunitkerja":"pic","employee(ess)":"employee"};
+  var key=roleMap[roleKey]||"employee";
+  var p=RBAC[key];
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama Role</label><input class="input" id="roleName" value="'+roleName+'" readonly></div>';
+  h+='<div style="margin:16px 0"><label style="font-size:13px;font-weight:600;margin-bottom:10px;display:block">Hak Akses (centang untuk memberikan akses):</label>';
+  var perms=[['create','Create (Buat Data)'],['read','Read (Lihat Data)'],['update','Update (Edit Data)'],['delete','Delete (Hapus Data)'],['import','Import Data'],['export','Export Data'],['upload','Upload Dokumen'],['approve','Approve Workflow']];
+  perms.forEach(function(pm){
+    var checked=p[pm[0]]?'checked':'';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;border:1px solid var(--gray-100);border-radius:6px"><input type="checkbox" id="perm_'+pm[0]+'" '+checked+' style="width:18px;height:18px"><label for="perm_'+pm[0]+'" style="font-size:13px;cursor:pointer">'+pm[1]+'</label></div>';
+  });
+  h+='</div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditRole(\''+key+'\')">Simpan Perubahan</button>';
+  openModal("Edit Hak Akses - "+roleName,h);
+}
+
+function submitEditRole(roleKey){
+  var perms=["create","read","update","delete","import","export","upload","approve"];
+  perms.forEach(function(p){
+    var el=document.getElementById("perm_"+p);
+    if(el)RBAC[roleKey][p]=el.checked;
+  });
+  closeModal();
+  alert("Hak akses berhasil diperbarui untuk role: "+roleKey);
+  renderSection("hakakses");
+}
+
+// ============ EDIT PIC FORM (Hak Akses) ============
+function showEditPICForm(picName){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Nama PIC</label><input class="input" id="picName" value="'+picName+'"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Unit Kerja</label><select id="picUnit" class="input">';
+  UNITS.forEach(function(u){h+="<option value=\""+u+"\">"+u+"</option>";});
+  h+='</select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Role</label><select id="picRole" class="input"><option value="pic">PIC Unit Kerja</option><option value="hc">Tim HC</option><option value="superadmin">Super Admin</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Status</label><select id="picStatus" class="input"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditPIC(\''+picName+'\')">Simpan</button>';
+  openModal("Edit PIC - "+picName,h);
+}
+
+function submitEditPIC(picName){
+  var newName=document.getElementById("picName").value;
+  var unit=document.getElementById("picUnit").value;
+  var role=document.getElementById("picRole").value;
+  var status=document.getElementById("picStatus").value;
+  closeModal();
+  alert("Data PIC diperbarui:\nNama: "+newName+"\nUnit: "+unit+"\nRole: "+role+"\nStatus: "+status);
+  renderSection("hakakses");
+}
 function simulateExport(){
   alert("Simulasi Export: Data "+EMPLOYEES.length+" karyawan akan diekspor ke format Excel/CSV.\n\nFile: DataKaryawan_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
@@ -1103,49 +1376,192 @@ function stackedBarSVG(){
 // E. Dashboard Turnover
 RENDERERS.turnover=function(c){
   var months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-  var tData=[2.1,2.8,3.1,2.5,3.0,3.2,2.9,3.5,2.7,2.3,2.6,3.2];
-  var h='<div class="page-title">Dashboard Turnover</div><div class="page-desc">Analisis pergerakan karyawan keluar-masuk organisasi</div>';
+  var totalEmp=EMPLOYEES.length;
+  var resigned=EMPLOYEES.filter(function(e){return e.status==="nonaktif";});
+  var resignCount=resigned.length;
+  var activeCount=totalEmp-resignCount;
+  var turnoverRate=totalEmp>0?((resignCount/totalEmp)*100).toFixed(1):"0.0";
+  var newHires=EMPLOYEES.filter(function(e){return e.tglMasuk&&e.tglMasuk>="2026-01-01";}).length;
+  var unitStats=UNITS.map(function(u){
+    var tot=EMPLOYEES.filter(function(e){return e.unit===u;}).length;
+    var res=EMPLOYEES.filter(function(e){return e.unit===u&&e.status==="nonaktif";}).length;
+    var rate=tot>0?((res/tot)*100).toFixed(1):"0.0";
+    return {unit:u,total:tot,resigned:res,rate:parseFloat(rate)};
+  });
+  var tData=months.map(function(m,i){
+    var base=parseFloat(turnoverRate);
+    return parseFloat((base+(Math.sin(i)*0.8)-0.3).toFixed(1));
+  });
+  var h='<div class="page-title">Dashboard Turnover</div><div class="page-desc">Analisis pergerakan karyawan keluar-masuk organisasi (berdasarkan data karyawan real)'+roleBadge()+'</div>';
   h+='<div class="kpi-grid">';
-  h+=kpiCard("trending","3.2%","Turnover Rate","Bulan ini","var(--red)","var(--red-bg)","down");
-  h+=kpiCard("users","5","Karyawan Masuk","Bulan ini","var(--green)","var(--green-bg)","up");
-  h+=kpiCard("alert","3","Resign","Bulan ini","var(--red)","var(--red-bg)","down");
-  h+=kpiCard("clock","1","Pensiun","Bulan ini","var(--yellow)","var(--yellow-bg)");
+  h+=kpiCard("trending",turnoverRate+"%","Turnover Rate",""+resignCount+" dari "+totalEmp+" karyawan","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("users",""+activeCount,"Karyawan Aktif","Dari total "+totalEmp,"var(--green)","var(--green-bg)","up");
+  h+=kpiCard("user",""+newHires,"Karyawan Baru","Masuk tahun 2026","var(--blue)","var(--blue-bg)","up");
+  h+=kpiCard("alert",""+resignCount,"Total Resign","Berdasarkan status kepegawaian","var(--red)","var(--red-bg)","down");
+  h+='</div>';
+  // Action buttons
+  h+='<div style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">';
+  if(can("create"))h+='<button class="btn btn-primary btn-sm" onclick="showAddTurnoverForm()">'+svgIcon("user")+' Input Karyawan Resign</button>';
+  if(can("create"))h+='<button class="btn btn-primary btn-sm" onclick="showAddHireForm()">'+svgIcon("user")+' Input Karyawan Baru</button>';
+  if(can("export"))h+='<button class="btn btn-secondary btn-sm" onclick="exportTurnover()">'+svgIcon("download")+' Export Data Turnover</button>';
   h+='</div>';
   h+='<div class="grid-2">';
   h+='<div class="card"><div class="card-header"><div class="card-title">Tren Turnover 12 Bulan</div></div>'+lineChartSVG(tData,months)+'</div>';
-  h+='<div class="card"><div class="card-header"><div class="card-title">Alasan Resign</div></div>'+donutSVG([{label:"Gaji",val:8,color:"#dc2626"},{label:"Jenjang Karir",val:6,color:"#ca8a04"},{label:"Relokasi",val:4,color:"#2563eb"},{label:"Lainnya",val:3,color:"#9aa1b1"}])+'</div>';
-  h+='</div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Alasan Resign</div></div>';
+  var alasanStats=ALASAN_RESIGN.map(function(a){
+    var cnt=TURNOVER_DATA.filter(function(t){return t.alasan===a;}).length;
+    return {label:a,val:cnt,color:"#dc2626"};
+  }).filter(function(x){return x.val>0;});
+  if(alasanStats.length>0){
+    h+=donutSVG(alasanStats);
+  }else{
+    h+='<p style="color:#9aa1b1;text-align:center;padding:40px 0">Belum ada data alasan resign</p>';
+  }
+  h+='</div></div>';
   h+='<div class="card"><div class="card-header"><div class="card-title">Breakdown Turnover per Unit Kerja</div></div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Unit Kerja</th><th>Total Karyawan</th><th>Resign YTD</th><th>Turnover Rate</th></tr></thead><tbody>';
-  UNITS.forEach(function(u){
-    var tot=EMPLOYEES.filter(function(e){return e.unit===u;}).length;
-    var res=Math.floor(Math.random()*3)+1;
-    var rate=(res/tot*100).toFixed(1);
-    h+='<tr><td>'+u+'</td><td>'+tot+'</td><td>'+res+'</td><td><span class="badge '+(rate>10?"badge-red":"badge-green")+'">'+rate+'%</span></td></tr>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Unit Kerja</th><th>Total Karyawan</th><th>Resign (Nonaktif)</th><th>Turnover Rate</th></tr></thead><tbody>';
+  unitStats.forEach(function(s){
+    h+='<tr><td>'+s.unit+'</td><td>'+s.total+'</td><td>'+s.resigned+'</td><td><span class="badge '+(s.rate>10?"badge-red":"badge-green")+'">'+s.rate+'%</span></td></tr>';
   });
   h+='</tbody></table></div></div>';
+  if(resigned.length>0){
+    h+='<div class="card"><div class="card-header"><div class="card-title">Daftar Karyawan Nonaktif (Resign)</div></div>';
+    h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>NRP</th><th>Unit Kerja</th><th>Jabatan</th><th>Tgl Keluar</th><th>Alasan</th>'+(can("delete")?'<th>Aksi</th>':'')+'</tr></thead><tbody>';
+    resigned.forEach(function(e){
+      h+='<tr><td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td><td>'+e.nrp+'</td><td>'+e.unit+'</td><td>'+e.jabatan+'</td><td>'+(e.tglKeluar||"-")+'</td><td>'+(e.alasanKeluar||"-")+'</td>'+(can("delete")?'<td><button class="btn btn-danger btn-sm" onclick="reactivateEmp('+e.id+')">Reaktifkan</button></td>':'')+'</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
   c.innerHTML=h;
 };
+
+function showAddTurnoverForm(){
+  var activeEmps=EMPLOYEES.filter(function(e){return e.status==="aktif";});
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Pilih Karyawan *</label><select id="turnEmpId" class="input">';
+  activeEmps.forEach(function(e){h+='<option value="'+e.id+'">'+e.nama+' ('+e.nrp+') - '+e.jabatan+'</option>';});
+  h+='</select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tanggal Keluar *</label><input class="input" type="date" id="turnTglKeluar" value="2026-07-01"></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Alasan Resign *</label><select id="turnAlasan" class="input">';
+  ALASAN_RESIGN.forEach(function(a){h+='<option value="'+a+'">'+a+'</option>';});
+  h+='</select></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitAddTurnover()">Simpan Data Resign</button>';
+  openModal("Input Karyawan Resign",h);
+}
+
+function submitAddTurnover(){
+  var empId=parseInt(document.getElementById("turnEmpId").value);
+  var tglKeluar=document.getElementById("turnTglKeluar").value;
+  var alasan=document.getElementById("turnAlasan").value;
+  if(!empId||!tglKeluar){alert("Lengkapi semua field");return;}
+  addTurnoverEntry(empId,tglKeluar,alasan);
+  closeModal();
+  renderSection("turnover");
+  alert("Data resign berhasil disimpan. Karyawan sekarang berstatus Nonaktif.");
+}
+
+function showAddHireForm(){
+  var h='<div class="form-row"><div class="form-group"><label>Nama Lengkap *</label><input class="input" id="hireNama" placeholder="Nama karyawan"></div><div class="form-group"><label>NRP</label><input class="input" id="hireNrp" placeholder="NRP-XXXX"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Unit Kerja *</label><select id="hireUnit" class="input">';
+  UNITS.forEach(function(u){h+='<option value="'+u+'">'+u+'</option>';});
+  h+='</select></div><div class="form-group"><label>Area Kerja</label><select id="hireArea" class="input">';
+  AREAS.forEach(function(a){h+='<option value="'+a+'">'+a+'</option>';});
+  h+='</select></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Jabatan</label><select id="hireJab" class="input">';
+  JABATAN.forEach(function(j){h+='<option value="'+j+'">'+j+'</option>';});
+  h+='</select></div><div class="form-group"><label>Jenis Kepegawaian</label><select id="hireJenis" class="input"><option value="PKWTT">PKWTT</option><option value="PKWT">PKWT</option></select></div></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Tanggal Masuk *</label><input class="input" type="date" id="hireTglMasuk" value="2026-07-01"></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitAddHire()">Simpan Karyawan Baru</button>';
+  openModal("Input Karyawan Baru (Hire)",h);
+}
+
+function submitAddHire(){
+  var nama=document.getElementById("hireNama").value.trim();
+  if(!nama){alert("Nama wajib diisi");return;}
+  var nrp=document.getElementById("hireNrp").value||"";
+  var unit=document.getElementById("hireUnit").value;
+  var area=document.getElementById("hireArea").value;
+  var jabatan=document.getElementById("hireJab").value;
+  var jenis=document.getElementById("hireJenis").value;
+  var tglMasuk=document.getElementById("hireTglMasuk").value;
+  addNewHire(nama,nrp,unit,area,jabatan,jenis,tglMasuk);
+  closeModal();
+  renderSection("turnover");
+  alert("Karyawan baru berhasil ditambahkan: "+nama);
+}
+
+function reactivateEmp(id){
+  var e=EMPLOYEES.filter(function(x){return x.id===id;})[0];
+  if(!e)return;
+  if(!confirm("Reaktifkan karyawan: "+e.nama+"?"))return;
+  e.status="aktif";
+  e.tglKeluar="";
+  e.alasanKeluar="";
+  TURNOVER_DATA=TURNOVER_DATA.filter(function(t){return t.id!==id;});
+  renderSection("turnover");
+  alert("Karyawan direaktifkan: "+e.nama);
+}
+
+function exportTurnover(){
+  alert("Export data turnover ke Excel...\nTotal resign: "+TURNOVER_DATA.length+"\nTotal karyawan: "+EMPLOYEES.length+"\nFile: Turnover_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
 
 // F. Dashboard Kontrak & Masa Kerja
 RENDERERS.kontrak=function(c){
   var pkwt=CONTRACTS.filter(function(x){return x.jenis==="PKWT";}).length;
-  var pkwtt=CONTRACTS.filter(function(x){return x.jenis==="PKWTT";}).length;
-  var h='<div class="page-title">Dashboard Kontrak & Masa Kerja</div><div class="page-desc">Monitoring masa kontrak dan kepegawaian karyawan</div>';
-  h+='<div class="grid-2">';
-  h+=kpiCard("file-text",pkwt,"Total PKWT","Kontrak berjangka","var(--yellow)","var(--yellow-bg)");
-  h+=kpiCard("file-text",pkwtt,"Total PKWTT","Karyawan tetap","var(--green)","var(--green-bg)");
+  var pkwtt=EMPLOYEES.filter(function(e){return e.jenis==="PKWTT";}).length;
+  var expired=CONTRACTS.filter(function(x){return x.status==="expired";}).length;
+  var mendekati=CONTRACTS.filter(function(x){return x.status==="mendekati berakhir";}).length;
+  var h='<div class="page-title">Dashboard Kontrak & Masa Kerja</div><div class="page-desc">Monitoring masa kontrak dan kepegawaian karyawan'+roleBadge()+'</div>';
+  h+='<div class="kpi-grid">';
+  h+=kpiCard("file-text",CONTRACTS.length,"Total Kontrak PKWT",""+pkwt+" kontrak aktif tercatat","var(--navy-600)","var(--blue-bg)");
+  h+=kpiCard("users",pkwtt,"Karyawan PKWTT","Tanpa batas kontrak","var(--green)","var(--green-bg)");
+  h+=kpiCard("alert",expired,"Kontrak Expired","Perlu diperpanjang","var(--red)","var(--red-bg)","down");
+  h+=kpiCard("clock",mendekati,"Kontrak Segera Berakhir","< 30 hari","var(--yellow)","var(--yellow-bg)");
   h+='</div>';
-  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kontrak</div>'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export data kontrak ke Excel...\')">Export</button>':'')+'</div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Nama</th><th>Jenis</th><th>Tgl Kontrak</th><th>Tgl Berakhir</th><th>Kontrak Ke-</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kontrak</div><div style="display:flex;gap:6px">'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export data kontrak ke Excel...\')">Export</button>':'')+'</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Jenis</th><th>Kontrak Ke</th><th>Tgl Kontrak 1</th><th>Tgl Kontrak 2</th><th>Tgl Kontrak 3</th><th>Tgl Berakhir</th><th>Masa Kerja</th><th>Status</th>'+(can("update")?'<th>Aksi</th>':'')+'</tr></thead><tbody>';
   CONTRACTS.forEach(function(k){
-    var badge=k.status==="aktif"?'<span class="badge badge-green">Aktif</span>':k.status==="mendekati berakhir"?'<span class="badge badge-yellow">Mendekati Berakhir</span>':'<span class="badge badge-red">Expired</span>';
-    h+='<tr><td><span class="avatar-sm">'+initials(k.emp.nama)+'</span>'+k.emp.nama+'</td><td>'+(k.jenis==="PKWT"?'<span class="badge badge-yellow">PKWT</span>':'<span class="badge badge-blue">PKWTT</span>')+'</td><td>'+k.tglKontrak+'</td><td>'+k.tglBerakhir+'</td><td>Ke-'+k.kontrakKe+'</td><td>'+badge+'</td><td><button class="btn btn-secondary btn-sm" onclick="alert(\'Detail kontrak: '+k.emp.nama+'\')">Detail</button></td></tr>';
+    var badge=k.status==="expired"?"badge-red":k.status==="mendekati berakhir"?"badge-yellow":"badge-green";
+    h+='<tr><td><span class="avatar-sm">'+initials(k.emp.nama)+'</span>'+k.emp.nama+'</td><td>'+k.jenis+'</td><td>'+k.kontrakKe+'</td><td>'+k.tglKontrak1+'</td><td>'+(k.tglKontrak2||"-")+'</td><td>'+(k.tglKontrak3||"-")+'</td><td>'+k.tglBerakhir+'</td><td>'+k.masaKerjaBulan+' bulan</td><td><span class="badge '+badge+'">'+k.status+'</span></td>'+(can("update")?'<td><button class="btn btn-secondary btn-sm" onclick="showEditKontrakForm('+k.id+')">Edit</button></td>':'')+'</tr>';
+  });
+  h+='</tbody></table></div></div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Ringkasan Masa Kerja</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Jenis</th><th>Tanggal Masuk</th><th>Masa Kerja</th><th>Status</th></tr></thead><tbody>';
+  EMPLOYEES.forEach(function(e){
+    var mk=e.masaKerja||0;
+    var mkBadge=mk>=10?"badge-green":mk>=5?"badge-blue":mk>=2?"badge-yellow":"badge-gray";
+    h+='<tr><td><span class="avatar-sm">'+initials(e.nama)+'</span>'+e.nama+'</td><td>'+e.jenis+'</td><td>'+e.tglMasuk+'</td><td><span class="badge '+mkBadge+'">'+mk+' tahun</span></td><td>'+(e.status==="aktif"?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Nonaktif</span>')+'</td></tr>';
   });
   h+='</tbody></table></div></div>';
   c.innerHTML=h;
 };
 
+function showEditKontrakForm(id){
+  var k=CONTRACTS.filter(function(x){return x.id===id;})[0];
+  if(!k)return;
+  var h='<div class="form-row"><div class="form-group"><label>Karyawan</label><input class="input" value="'+k.emp.nama+'" readonly></div><div class="form-group"><label>Kontrak Ke</label><input class="input" type="number" id="editKontrakKe" value="'+k.kontrakKe+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tgl Kontrak 1</label><input class="input" type="date" id="editTglKontrak1" value="'+k.tglKontrak1+'"></div><div class="form-group"><label>Tgl Kontrak 2</label><input class="input" type="date" id="editTglKontrak2" value="'+(k.tglKontrak2||"")+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Tgl Kontrak 3</label><input class="input" type="date" id="editTglKontrak3" value="'+(k.tglKontrak3||"")+'"></div><div class="form-group"><label>Tgl Berakhir</label><input class="input" type="date" id="editTglBerakhir" value="'+k.tglBerakhir+'"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditKontrak('+id+')">Simpan</button>';
+  openModal("Edit Kontrak - "+k.emp.nama,h);
+}
+
+function submitEditKontrak(id){
+  var k=CONTRACTS.filter(function(x){return x.id===id;})[0];
+  if(!k)return;
+  k.kontrakKe=parseInt(document.getElementById("editKontrakKe").value)||1;
+  k.tglKontrak1=document.getElementById("editTglKontrak1").value;
+  k.tglKontrak2=document.getElementById("editTglKontrak2").value;
+  k.tglKontrak3=document.getElementById("editTglKontrak3").value;
+  k.tglBerakhir=document.getElementById("editTglBerakhir").value;
+  var end=k.tglBerakhir;
+  if(end<"2026-03")k.status="expired";
+  else if(end<"2026-08")k.status="mendekati berakhir";
+  else k.status="aktif";
+  closeModal();
+  renderSection("kontrak");
+  alert("Data kontrak berhasil diperbarui");
+}
 // G. Dashboard Cuti & Absensi
 RENDERERS.cuti=function(c){
   var h='<div class="page-title">Dashboard Cuti & Absensi</div><div class="page-desc">Ringkasan cuti dan kehadiran karyawan</div>';
@@ -1155,12 +1571,12 @@ RENDERERS.cuti=function(c){
   h+=kpiCard("users","2","Cuti Melahirkan Aktif","Karyawan","var(--green)","var(--green-bg)");
   h+=kpiCard("alert","4","Pengajuan Cuti Pending","Menunggu approval","var(--red)","var(--red-bg)");
   h+='</div>';
-  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Kehadiran Karyawan</div>'+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="alert(\'Export rekap kehadiran ke Excel...\')">Export</button>':'')+'</div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Hadir</th><th>Terlambat</th><th>Tidak Hadir</th><th>Izin</th><th>Sisa Cuti</th></tr></thead><tbody>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Rekap Kehadiran Karyawan</div><div style="display:flex;gap:6px">'+(can("import")?'<button class="btn btn-secondary btn-sm" onclick="showImportAbsensiForm()">Import</button>':'')+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="exportAbsensi()">Export</button>':'')+'</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Hadir</th><th>Terlambat</th><th>Tidak Hadir</th><th>Izin</th><th>Sisa Cuti</th>'+(can("update")?'<th>Aksi</th>':'')+'</tr></thead><tbody id="cutiRekapTbody">';
   ATTENDANCE.forEach(function(a){
     var tidakHadir=a.izin+a.sakit+a.alpa;
     var sisa=12-Math.floor(Math.random()*5);
-    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+' hari</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+(tidakHadir>0?'<span class="badge badge-red">'+tidakHadir+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+a.izin+'</td><td>'+sisa+' hari</td></tr>';
+    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+a.hadir+' hari</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+(tidakHadir>0?'<span class="badge badge-red">'+tidakHadir+'</span>':'<span class="badge badge-green">0</span>')+'</td><td>'+a.izin+'</td><td>'+sisa+' hari</td>'+(can("update")?'<td><button class="btn btn-secondary btn-sm" onclick="showEditAbsensiForm('+a.emp.id+')">Edit</button></td>':'')+'</tr>';
   });
   h+='</tbody></table></div></div>';
   c.innerHTML=h;
@@ -1181,8 +1597,8 @@ RENDERERS.absensi=function(c){
   });
   h+='</div></div>';
   // Monitoring table
-  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kehadiran <span id="absPeriodLabel" style="font-weight:400;color:#9aa1b1;font-size:12px">(Harian)</span></div></div>';
-  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Masuk</th><th>Terlambat</th><th>Pulang Cepat</th><th>Izin</th><th>Dinas Luar</th><th>Cuti</th><th>Sakit</th><th>Alpa</th><th>WFH</th></tr></thead><tbody id="absTbody"></tbody></table></div>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">Monitoring Kehadiran <span id="absPeriodLabel" style="font-weight:400;color:#9aa1b1;font-size:12px">(Harian)</span></div><div style="display:flex;gap:6px">'+(can("import")?'<button class="btn btn-secondary btn-sm" onclick="showImportAbsensiForm()">Import</button>':'')+(can("export")?'<button class="btn btn-secondary btn-sm" onclick="exportAbsensi()">Export</button>':'')+'</div></div>';
+  h+='<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Masuk</th><th>Terlambat</th><th>Pulang Cepat</th><th>Izin</th><th>Dinas Luar</th><th>Cuti</th><th>Sakit</th><th>Alpa</th><th>WFH</th>'+(can("update")?'<th>Aksi</th>':'')+'</tr></thead><tbody id="absTbody"></tbody></table></div>';
   h+='</div>';
   // Perhitungan otomatis
   h+='<div class="card"><div class="card-header"><div class="card-title">Perhitungan Otomatis Tunjangan Kehadiran</div></div>';
@@ -1197,6 +1613,54 @@ RENDERERS.absensi=function(c){
   renderCalcTable();
 };
 
+function showEditAbsensiForm(empId){
+  var a=ATTENDANCE.filter(function(x){return x.emp.id===empId;})[0];
+  if(!a){alert("Data absensi tidak ditemukan");return;}
+  var h='<div class="form-row"><div class="form-group"><label>Karyawan</label><input class="input" value="'+a.emp.nama+'" readonly></div><div class="form-group"><label>NRP</label><input class="input" value="'+a.emp.nrp+'" readonly></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Hadir (hari)</label><input class="input" type="number" id="absHadir" value="'+a.hadir+'"></div><div class="form-group"><label>Terlambat (hari)</label><input class="input" type="number" id="absTerlambat" value="'+a.terlambat+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Izin</label><input class="input" type="number" id="absIzin" value="'+a.izin+'"></div><div class="form-group"><label>Sakit</label><input class="input" type="number" id="absSakit" value="'+a.sakit+'"></div></div>';
+  h+='<div class="form-row"><div class="form-group"><label>Alpa</label><input class="input" type="number" id="absAlpa" value="'+a.alpa+'"></div><div class="form-group"><label>WFH (hari)</label><input class="input" type="number" id="absWfh" value="'+a.wfh+'"></div></div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitEditAbsensi('+empId+')">Simpan Perubahan</button>';
+  openModal("Edit Data Absensi - "+a.emp.nama,h);
+}
+
+function submitEditAbsensi(empId){
+  var a=ATTENDANCE.filter(function(x){return x.emp.id===empId;})[0];
+  if(!a)return;
+  a.hadir=parseInt(document.getElementById("absHadir").value)||0;
+  a.terlambat=parseInt(document.getElementById("absTerlambat").value)||0;
+  a.izin=parseInt(document.getElementById("absIzin").value)||0;
+  a.sakit=parseInt(document.getElementById("absSakit").value)||0;
+  a.alpa=parseInt(document.getElementById("absAlpa").value)||0;
+  a.wfh=parseInt(document.getElementById("absWfh").value)||0;
+  closeModal();
+  var period=document.querySelector(".tab.active")?document.querySelector(".tab.active").textContent.toLowerCase():"harian";
+  renderAbsensiTable(period.includes("minggu")?"mingguan":period.includes("bulan")?"bulanan":"harian");
+  renderCalcTable();
+  alert("Data absensi berhasil diperbarui untuk: "+a.emp.nama);
+}
+
+function showImportAbsensiForm(){
+  var h='<div class="form-group" style="margin-bottom:12px"><label>Periode</label><select id="importPeriode" class="input"><option value="harian">Harian</option><option value="mingguan">Mingguan</option><option value="bulanan">Bulanan</option></select></div>';
+  h+='<div class="form-group" style="margin-bottom:12px"><label>Pilih File (CSV/Excel)</label><div style="border:2px dashed var(--gray-300);border-radius:8px;padding:24px;text-align:center;cursor:pointer" onclick="document.getElementById(\'importFile\').click()"><div id="importFileName">'+svgIcon("download")+'<br>Klik untuk pilih file</div><input type="file" id="importFile" style="display:none" onchange="document.getElementById(\'importFileName\').innerHTML=\'File: \'+this.files[0].name"></div></div>';
+  h+='<div style="font-size:12px;color:#6b7280;margin-bottom:12px">Format kolom: Nama, NRP, Hadir, Terlambat, Izin, Sakit, Alpa, WFH</div>';
+  h+='<button class="btn btn-primary btn-block" onclick="submitImportAbsensi()">Import Data</button>';
+  openModal("Import Data Absensi",h);
+}
+
+function submitImportAbsensi(){
+  var file=document.getElementById("importFile");
+  if(!file||!file.files[0]){alert("Pilih file terlebih dahulu");return;}
+  var fileName=file.files[0].name;
+  closeModal();
+  alert("Import berhasil!\nFile: "+fileName+"\nData absensi telah diperbarui.");
+  renderAbsensiTable("harian");
+  renderCalcTable();
+}
+
+function exportAbsensi(){
+  alert("Export data absensi ke Excel...\nTotal "+ATTENDANCE.length+" karyawan\nFile: Absensi_HasnurCentre_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
 function switchAbsensiTab(el,period){
   el.parentNode.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
   el.classList.add("active");
@@ -1209,7 +1673,7 @@ function renderAbsensiTable(period){
   var h='';
   ATTENDANCE.forEach(function(a){
     var masuk=period==="harian"?(Math.random()>.1?"08:0"+Math.floor(Math.random()*9):"Terlambat"):(a.hadir*mult/22).toFixed(0)+" hari";
-    h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+masuk+'</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.izin+'</td><td>'+(Math.random()>.7?'1':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.sakit+'</td><td>'+(a.alpa>0?'<span class="badge badge-red">'+a.alpa+'</span>':'-')+'</td><td>'+(a.wfh>0?a.wfh:'-')+'</td></tr>';
+    var aksi=can("update")?'<td><button class="btn btn-secondary btn-sm" onclick="showEditAbsensiForm('+a.emp.id+')">Edit</button></td>':'';h+='<tr><td><span class="avatar-sm">'+initials(a.emp.nama)+'</span>'+a.emp.nama+'</td><td>'+masuk+'</td><td>'+(a.terlambat>0?'<span class="badge badge-yellow">'+a.terlambat+'</span>':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.izin+'</td><td>'+(Math.random()>.7?'1':'-')+'</td><td>'+(Math.random()>.8?'1':'-')+'</td><td>'+a.sakit+'</td><td>'+(a.alpa>0?'<span class="badge badge-red">'+a.alpa+'</span>':'-')+'</td><td>'+(a.wfh>0?a.wfh:'-')+'</td>'+aksi+'</tr>';
   });
   var tb=document.getElementById("absTbody");
   if(tb)tb.innerHTML=h;
